@@ -33,6 +33,6 @@ class TransactionItem extends Migration
      */
     public function down()
     {
-        //
+        Schema::dropIfExists('transaction_item');
     }
 }
