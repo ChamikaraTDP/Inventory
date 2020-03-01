@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Transaction;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -24,5 +25,12 @@ class HomeController extends Controller
     public function index()
     {
         return view('home');
+    }
+
+    public function add_items(){
+
+        $transaction = Transaction::find(2);
+
+        $transaction->items()->attach(5);
     }
 }

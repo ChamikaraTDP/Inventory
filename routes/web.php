@@ -18,3 +18,18 @@ Route::get('/', function () {
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
+
+Route::get('/add_items', 'HomeController@add_items');
+
+// Add items page
+Route::get('/add', 'TransactionController@index')->name('add_items');
+
+Route::post('/send_data', 'TransactionController@send_data')->name('send_data');
+
+
+// Route that will be executed when no other route matches the incoming request
+Route::fallback(function () {
+    return response()->json(
+        ['message' => 'Page Not Found! If error persists, contact Chamikara'], 404
+    );
+});

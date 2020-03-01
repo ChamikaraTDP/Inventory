@@ -58,7 +58,7 @@ class TransactionController extends Controller
             $attach_arr[$itm_arr[$i]->item_id] = array('quantity' => $itm_arr[$i]->quantity, 'unit_price' => $itm_arr[$i]->unit_price);
         }
 
-        $transaction->items()->attach($attach_arr);
+        $transaction->bulk_items()->attach($attach_arr);
 
         /*$str = "<div>";
         foreach($itms[0] as $x => $x_value) {
@@ -70,7 +70,7 @@ class TransactionController extends Controller
 
 
 
-        echo "recorded!";
+        echo "transaction created and items attached successfully";
 
        /* try {
 

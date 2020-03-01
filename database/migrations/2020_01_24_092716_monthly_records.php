@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class TransactionItem extends Migration
+class MonthlyRecords extends Migration
 {
     /**
      * Run the migrations.
@@ -13,15 +13,15 @@ class TransactionItem extends Migration
      */
     public function up()
     {
-        schema::create('transaction_item', function (Blueprint $table){
+        schema::create('monthly_records', function (Blueprint $table){
             $table->bigIncrements('id');
-            $table->unsignedBigInteger('transaction_id');
-            $table->unsignedBigInteger('item_id');
+            $table->string('month')->nullable();
+            $table->unsignedBigInteger('station_id')->nullable();
+            $table->unsignedBigInteger('item_id')->nullable();
             $table->integer('quantity')->nullable();
-            $table->integer('balance')->nullable();
-            $table->unsignedInteger('unit_price')->nullable();
+            $table->timestamps();
 
-            $table->foreign('transaction_id')->references('id')->on('transactions');
+            $table->foreign('station_id')->references('id')->on('stations');
             $table->foreign('item_id')->references('id')->on('items');
         });
     }
@@ -33,6 +33,6 @@ class TransactionItem extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('transaction_item');
+        Schema::dropIfExists('monthly_records');
     }
 }
