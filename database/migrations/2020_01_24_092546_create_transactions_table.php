@@ -17,15 +17,15 @@ class CreateTransactionsTable extends Migration
             $table->bigIncrements('id');
             $table->date('issuing_date')->nullable();
             $table->string('issue_no')->nullable();
-            $table->unsignedBigInteger('received_by');
-            $table->unsignedBigInteger('receiving_station');
-            $table->string('description')->nullable();
-            $table->string('transaction_type')->nullable();
-            $table->string('supplier')->nullable();
-            $table->string('receipt_no')->nullable();
             $table->unsignedBigInteger('issued_by')->nullable();
             $table->unsignedBigInteger('issuing_station')->nullable();
+            $table->string('receipt_no')->nullable();
+            $table->unsignedBigInteger('received_by')->nullable();
+            $table->unsignedBigInteger('receiving_station')->nullable();
+            $table->string('transaction_type')->nullable();
+            $table->string('supplier')->nullable();
             $table->date('accepted_date')->nullable();
+            $table->string('description')->nullable();
             $table->timestamps();
 
             $table->foreign('issued_by')->references('id')->on('users');
