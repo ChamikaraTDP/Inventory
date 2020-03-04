@@ -17,13 +17,13 @@ Route::get('/', function () {
 
 Auth::routes();
 
+//test page
 Route::get('/home', 'HomeController@index')->name('home');
 
-Route::get('/add_items', 'HomeController@add_items');
-
-// Add items page
+//Show Add items page
 Route::get('/add', 'TransactionController@index')->name('add_items');
 
+//Add item form data to db
 Route::post('/send_data', 'TransactionController@send_data')->name('send_data');
 
 

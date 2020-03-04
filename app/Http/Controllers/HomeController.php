@@ -27,10 +27,4 @@ class HomeController extends Controller
         return view('home');
     }
 
-    public function add_items(){
-
-        $transaction = Transaction::find(2);
-
-        $transaction->items()->attach(5);
-    }
 }

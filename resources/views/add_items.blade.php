@@ -3,8 +3,8 @@
 @section('forms')
     <!-- div container for all the elements -->
     <div class="grid-container">
+        <div class="grid-box">
         <form class="add-form" id="myForm">
-
             <ol>
                 <li><label for="form_in_1">Date:</label><input id="form_in_1" class="add-form-date" type="date" name="date"/></li>
                 <li><label for="form_in_2">Received From:</label><input id="form_in_2" class="add-form-text" type="text" name="supplier"/></li>
@@ -16,7 +16,7 @@
                         <th>Item Category</th>
                         <th>Item Name</th>
                         <th>Quantity</th>
-                        <th>Unit Value</th>
+                        <th>Unit Value(Rs/-)</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -27,12 +27,13 @@
             <input type="submit" value="submit"/>
         </form>
         <div id="re_text"></div>
+        </div>
     </div>
 
     <script>
         'use strict';
 
-        let items = @json($items); // make js object using items
+        const items = @json($items); // make js object using items
 
         // change items dropdown
         function change_category(node){
@@ -69,7 +70,7 @@
 
         }
 
-        let categories = @json($categories); // make js object using categories
+        const categories = @json($categories); // make js object using categories
         let list = make_cat_list(categories); // pass the object to make the list
 
         // insert rows according to user
@@ -132,6 +133,8 @@
 
         window.addEventListener('load', function () {
 
+            let form = document.getElementById("myForm");
+
             function sendData() {
 
                 console.log("data sending");
@@ -161,7 +164,6 @@
                     );
                 }
 
-
                 XHR.addEventListener('load', function (event) {
                     console.log("response loaded");
                     console.log(event.target.responseText);
@@ -189,10 +191,13 @@
             let reset_form = () => {
                 try {
                     let rows_to_remove = document.getElementById('tbl_body').childNodes;
-                    for (let i = rows_to_remove.length - 1; i >= 0; i--) {
+                    let n_rows = rows_to_remove.length;
+                    let i =  n_rows- 1;
+                    for ( i ; i >= 0; i--) {
                         rows_to_remove[i].remove();
                     }
-                    document.getElementById('myForm').reset();
+
+                    form.reset();
                     insert_row();
                     console.log("form resets successfully");
 
@@ -201,8 +206,6 @@
                 }
             };
 
-            let form = document.getElementById("myForm");
-
             // ...and take over its submit event.
             form.addEventListener( "submit", function ( event ) {
                 event.preventDefault();
@@ -210,7 +213,6 @@
             });
 
         });
-
 
     </script>
 
