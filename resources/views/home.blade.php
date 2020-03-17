@@ -5,32 +5,54 @@
 </head>
 
 <body>
+    <div id="nav_itm2"></div>
 
     <form id="myForm" action="/add_items" method="POST">
         @csrf
         <label for="myName">Send me your name:</label>
         <br/>
-        <input id="myName" name="fname" value="John">
-        <input id="myName" name="lname" value="watson">
-        <input id="myName" name="age" value="32">
+        <input name="fname" value="John">
+        <input name="lname" value="watson">
+        <input name="age" value="32">
         <br/>
-        <input id="myName" name="fname" value="John">
-        <input id="myName" name="lname" value="watson">
-        <input id="myName" name="age" value="32">
+        <input name="fname" value="John">
+        <input name="lname" value="watson">
+        <input name="age" value="32">
         <br/>
-        <input id="myName" name="fname" value="John">
-        <input id="myName" name="lname" value="watson">
-        <input id="myName" name="age" value="32">
+        <input name="fname" value="John">
+        <input name="lname" value="watson">
+        <input type="text" name="age" value="32">
         <br/>
-        <input type="submit" value="Send Me!">
+        <input id="in_3" type="button" value="Send Me!">
     </form>
     <p id="para"></p>
 
-
     <script>
+        in_3.addEventListener('click', () => {
+          //let prot = prompt('just give a thumbs up', 'no thumbs');
+          let con = confirm('Are you worried');
+          //alert('you\'re ' + prot + ' years old');
+          alert(`worried ${con} `);
+        });
+    </script>
+
+    {{--<script>
+        (getD = async () => {
+            let rpns = await fetch('/');
+            if (rpns.ok) {
+               document.getElementById('nav_itm2').innerHTML =  await rpns.text();
+            } else {
+                alert("HTTP-Error: " + response.status);
+            }
+        })();
+    </script>--}}
 
 
-        x = sumAll(1, 123, 500, 115, 44, 88);
+
+    {{--<script>
+
+
+        /*x = sumAll(1, 123, 500, 115, 44, 88);
 
         function sumAll() {
             let i;
@@ -39,7 +61,7 @@
                 sum += arguments[i];
             }
             return sum;
-        }
+        }*/
 
         console.log(x);
         /*let person = {
@@ -93,7 +115,7 @@
         obj.decrement;
         console.log(obj.counter);*/
 
-    </script>
+    </script>--}}
 
     {{--<script>
         class Car {
@@ -115,9 +137,6 @@
         console.log(myCar.getMName);
 
     </script>--}}
-
-
-
 
 
     {{--<script>
