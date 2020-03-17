@@ -78,9 +78,9 @@
     cell2.innerHTML = '<select name=\'item_id\'>\n' +
         '              </select>';
 
-    cell3.innerHTML = '<input class=\'ad_fm_inp\' type=\'number\' name=\'quantity\'>';
+    cell3.innerHTML = '<input class=\'ad_fm_inp\' type=\'number\' name=\'quantity\' min="1" required>';
 
-    cell4.innerHTML = '<input class=\'ad_fm_inp\' type=\'number\' name=\'unit_price\'>';
+    cell4.innerHTML = '<input class=\'ad_fm_inp\' type=\'number\' name=\'unit_price\' min="0">';
 
     cell5.innerHTML = '<button type=\'button\' class=\'add_btn\' onclick=\'insert_row(this);\'>Add</button>' +
         '<button class=\'rm_btn\' onclick=\'delete_row(this);\' style=\'visibility: hidden\'>Remove</button>';
@@ -119,7 +119,6 @@
       rm_btns[0].style.visibility = 'hidden';
     }
   }
-
 
   /**
    * initialize add form so that it can be submitted using submit btn
@@ -161,17 +160,23 @@
             {
               'item_id': FD.getAll('item_id')[i],
               'quantity': FD.getAll('quantity')[i],
-              'unit_price': FD.getAll('unit_price')[i],
+              'unit_price': (FD.getAll('unit_price')[i] === '' ? 0 : FD.getAll('unit_price')[i]),
             },
         );
       }
 
       XHR.addEventListener('load', function(event) {
         console.log('response loaded');
-        console.log(event.target.responseText);
-        alert('Items added successfully');
 
-        reset_form();
+        if (event.target.status === 200) {
+          console.log(event.target.responseText);
+          alert('Items added successfully');
+          reset_form();
+        } else {
+          console.log(event.target.status + ' ' + event.target.statusText);
+          alert('Something went wrong:(');
+        }
+
       });
 
       XHR.addEventListener('abort', function(event) {
@@ -299,7 +304,8 @@
       let cell3 = document.createElement('TD');
 
       cell2.innerHTML = String(isu_qt);
-      cell3.innerHTML = '<button type=\'button\' class=\'rm_btn isu_ad_btn\' onclick=\'itm_fm_isu(this,' + 'isu_ad_btn_' +
+      cell3.innerHTML = '<button type=\'button\' class=\'rm_btn isu_ad_btn\' onclick=\'itm_fm_isu(this,' +
+          'isu_ad_btn_' +
           cell1.getAttribute('data-item-id') + ')\'>Remove</button>';
 
       row.appendChild(cell1);
