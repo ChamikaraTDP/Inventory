@@ -4,6 +4,10 @@
   const items = @json($items);
   const categories = @json($categories);
 
+</script>
+
+<script>
+  'use strict';
   /**
    * make items dropdown
    *
@@ -225,6 +229,11 @@
       event.preventDefault();
       sendData();
     });
+
+    $("#model_btn").click(() => {
+      alert("hello");
+    });
+
   }
 
   /**

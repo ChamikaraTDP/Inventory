@@ -1,6 +1,8 @@
 'use strict';
 
-tab_selection(0);
+$(() => {
+        tab_selection(0);
+    });
 
 /**
  * configure color of tabs

@@ -1,8 +1,9 @@
+/*------------------------------global -----------------------------------*/
 * {
     box-sizing: border-box;
 }
 
-/* navigation tab */
+/* -------------------------- navigation tab --------------------------- */
 .nv_box {
     margin: 0;
     display: flex;
@@ -29,7 +30,7 @@
     color: white;
 }
 
-/* main grid area */
+/*--------------------------- main grid area ------------------------ */
 .grid_container {
     display: grid;
     grid-template-columns: 1fr 4fr 1fr;
@@ -58,7 +59,7 @@
     padding: 5px 0;
 }
 
-/* issue tab grids */
+/* -----------------------------issue tab grids------------------- */
 .issue_grid_container {
     grid-template-columns: 1fr 3fr 2fr;
     grid-template-areas: 'left middle right';
@@ -83,7 +84,7 @@
     padding: 5px 0;
 }
 
-/* issue tab quantity input field */
+/*------------------------ issue tab quantity input field -----------------------*/
 .isu_qan_inp {
     max-width: 100px;
     border: 1px solid #555;
@@ -95,7 +96,7 @@
     background-color: white;
 }
 
-/* add form */
+/* ----------------------------- add form ------------------------------*/
 #myForm {
     padding: 10px;
 }
@@ -126,23 +127,23 @@ table, th, td {
     margin: 0 0 0 5px;
 }
 
-.add_btn:hover, .rm_btn:hover {
+.add_btn:hover, .rm_btn:hover, .add_btn:focus, .rm_btn:focus {
     color: white;
     box-shadow: 0 0 4px gray;
     cursor: pointer;
 }
 
-.add_btn:hover {
+.add_btn:hover, .add_btn:focus {
     background-color: dodgerblue;
     border: 1px solid dodgerblue;
 }
 
-.rm_btn:hover {
+.rm_btn:hover, .rm_btn:focus {
     background-color: #FF0C3B;
     border: 1px solid #FF0C3B;
 }
 
-/* bottom description & submit btn  */
+/*---------------------- bottom description & submit btn ---------------------- */
 .ad_btm_area {
     padding: 10px 40px;
 }
@@ -152,9 +153,8 @@ table, th, td {
     justify-content: right;
 }
 
-/* text input fields */
+/* ------------------------------- text input fields ----------------------- */
 .ad_fm_inp[type=text], .ad_fm_inp[type=number]{
-    margin-left: 5px;
     padding: 2px 5px;
     display: inline-block;
     border: 1px solid #bbb;
@@ -165,11 +165,12 @@ table, th, td {
     border: 1px solid #4aa0e6;
 }
 
-/* issue tab add btn */
+/*--------------------------------- issue tab add btn -------------------------------*/
 .isu_ad_btn {
     padding: 2px 10px;
 }
-/* isu tab disabled add btn */
+
+/*------------------------------ isu tab disabled add btn ---------------------*/
 .ad_btn_dis {
     background-color: #a1a1a2;
     color: #383d41;
@@ -183,14 +184,50 @@ table, th, td {
     border: 1px solid #cbcbf0;
 }
 
-/* submit btn on isu tbl */
+/*-------------------------------- submit btn on isu tbl------------------------ */
 .sub_btn {
     font-size: 0.9rem;
 }
 
-.sub_btn:hover {
+.sub_btn:hover, .sub_btn:focus {
     border-radius: 8px;
     background-color: white;
     color: #383d41;
     box-shadow: none;
+}
+
+
+/*-------------------------------- model background --------------------------*/
+.model {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0, 0, 0);
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.model_content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover, .close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
 }

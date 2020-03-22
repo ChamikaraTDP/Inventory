@@ -9,14 +9,11 @@
         <button onclick="tab_selection(3);">Reports</button>
     </div>
 
-    {{--@yield('form1')--}}
-
     <div class="grid_area" id="grid_area"></div>
 
 @endsection
 
 @section('js_area')
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     @include('js.inventory_main_js_blade')
-    <script src="{{ asset('js/inventory_main.js') }}" defer></script>
+    <script src="{{ asset('js/inventory_main.js') }}"></script>
 @endsection
