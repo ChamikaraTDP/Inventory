@@ -12,4 +12,8 @@ const mix = require('laravel-mix');
  */
 
 mix.js('resources/js/app.js', 'public/js')
+    .babel([
+        'resources/js/inventory/add_items.js',
+        'resources/js/inventory/issue_items.js',
+        'resources/js/inventory/navigation.js'],'public/js/inventory.js')
    .sass('resources/sass/app.scss', 'public/css');

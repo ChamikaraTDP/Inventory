@@ -14,6 +14,16 @@
 @endsection
 
 @section('js_area')
-    @include('js.inventory_main_js_blade')
-    <script src="{{ asset('js/inventory_main.js') }}"></script>
+    <script>
+        'use strict';
+
+        var items = @json($items);
+        var categories = @json($categories);
+
+        function getCSRF() {
+             return '{{csrf_token()}}';
+        }
+    </script>
+
+    <script src="{{ asset('js/inventory.js') }}"></script>
 @endsection

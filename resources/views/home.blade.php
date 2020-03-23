@@ -1,40 +1,43 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
     <title>test page</title>
+    <link rel="stylesheet" href="https://unpkg.com/mocha/mocha.css" />
 </head>
 
 <body>
-    <div id="nav_itm2"></div>
+    <div id="mocha"></div>
 
-    <form id="myForm" action="/add_items" method="POST">
-        @csrf
-        <label for="myName">Send me your name:</label>
-        <br/>
-        <input name="fname" value="John">
-        <input name="lname" value="watson">
-        <input name="age" value="32">
-        <br/>
-        <input name="fname" value="John">
-        <input name="lname" value="watson">
-        <input name="age" value="32">
-        <br/>
-        <input name="fname" value="John">
-        <input name="lname" value="watson">
-        <input type="text" name="age" value="32">
-        <br/>
-        <input id="in_3" type="button" value="Send Me!">
-    </form>
-    <p id="para"></p>
+    <script src="https://unpkg.com/chai/chai.js"></script>
+    <script src="https://unpkg.com/mocha/mocha.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sinon.js/9.0.1/sinon.min.js"></script>
 
-    <script>
+    <script class="mocha-init">
+        mocha.setup('bdd');
+        mocha.checkLeaks();
+    </script>
+
+    <script src="js/tests.js"></script>
+
+    <script src="vendor/inventory/inventory.js"></script>
+
+    <script class="mocha-exec">
+        mocha.run();
+    </script>
+
+</body>
+
+</html>
+
+
+    {{--<script>
         in_3.addEventListener('click', () => {
           //let prot = prompt('just give a thumbs up', 'no thumbs');
           let con = confirm('Are you worried');
           //alert('you\'re ' + prot + ' years old');
           alert(`worried ${con} `);
         });
-    </script>
+    </script>--}}
 
     {{--<script>
         (getD = async () => {
@@ -252,9 +255,7 @@
 
     </script>--}}
 
-</body>
 
-</html>
     {{--<div class="action-bar">
         <div class="btn-container">
             <button class="action-btn">Add</button>
