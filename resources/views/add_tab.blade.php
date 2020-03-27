@@ -35,17 +35,17 @@
                     <input id="form_in_4" type="text" class="ad_fm_inp" name="description"/>
                 </div>
                 <div class="ad_sub_btn_dv">
-                    <input id="add_sub_btn" type="submit" value="submit" class="add_btn sub_btn"/>
+                    <input id="add_sub_btn" type="submit" class="add_btn sub_btn" value="submit">
                 </div>
-                <button id="model_btn" type="button">Open</button>
             </div>
         </form>
     </div>
 </div>
 
-<div id="my_model" class="model">
-    <div class="model_content">
-        <span class="close">&times;</span>
+<div id="ad_mdl" class="ad_mdl">
+    <div id="ad_mdl_cont" class="ad_mdl_cont">
+        <span id="ad_mdl_close" class="ad_mdl_close">&times;</span>
         <p>This is my first model window</p>
+        <button id="mdl_conf_btn" type="button" class="add_btn">Confirm</button>
     </div>
 </div>

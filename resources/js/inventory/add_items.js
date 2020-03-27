@@ -80,6 +80,7 @@ function insert_row(current) {
     cell5.innerHTML = `<button type='button' class='add_btn'>Add</button>` +
         `<button class='rm_btn' style='visibility: hidden'>Remove</button>`;
 
+
     (cell5.getElementsByClassName('add_btn')[0]).addEventListener('click', function() {
         insert_row(this);
     });
@@ -149,6 +150,7 @@ function delete_row(current) {
  */
 function init_submit() {
     const form = document.getElementById('ad_itm_form');
+    let ad_model = document.getElementById('ad_mdl');
 
     /**
      * xhr to send data to controller
@@ -159,6 +161,9 @@ function init_submit() {
      */
     function sendData() {
         console.log('initialize form data');
+
+        let mdl_cont = ad_model.getElementsByClassName('ad_mdl_cont')[0];
+        mdl_cont.innerHTML = `<p>processing request please wait...</p>`;
 
         const XHR = new XMLHttpRequest();
         const js_obj = {};
@@ -189,8 +194,14 @@ function init_submit() {
 
             if (event.target.status === 200) {
                 console.log(event.target.responseText);
-                alert('Items added successfully!');
                 reset_form();
+                mdl_cont.innerHTML = `<span id="ad_mdl_close" class="ad_mdl_close">&times;</span>
+                    <p>Items added successfully:)</p>`;
+                (mdl_cont.getElementsByClassName('ad_mdl_close')[0]).addEventListener('click', function() {
+                    ad_model.style.display = 'none';
+                });
+                /*ad_model.style.display = 'none';
+                alert('Items added successfully!');*/
             } else {
                 console.log(event.target.status + ' ' + event.target.statusText);
                 alert('Something went wrong:(');
@@ -235,6 +246,17 @@ function init_submit() {
     // take over submit event.
     form.addEventListener('submit', function(event) {
         event.preventDefault();
-        sendData();
+        ad_model.style.display = 'block';
+        //sendData();
+    });
+
+    function init_model() {
+
+    }
+
+    document.getElementById('mdl_conf_btn').addEventListener('click', sendData);
+
+    document.getElementById('ad_mdl_close').addEventListener('click', function() {
+        ad_model.style.display = 'none';
     });
 }

@@ -97,7 +97,7 @@
 }
 
 /* ----------------------------- add form ------------------------------*/
-#myForm {
+#ad_itm_form {
     padding: 10px;
 }
 
@@ -198,7 +198,7 @@ table, th, td {
 
 
 /*-------------------------------- model background --------------------------*/
-.model {
+.ad_mdl {
     display: none;
     position: fixed;
     z-index: 1;
@@ -211,22 +211,22 @@ table, th, td {
     background-color: rgba(0, 0, 0, 0.4);
 }
 
-.model_content {
+.ad_mdl_cont {
     background-color: #fefefe;
     margin: 15% auto;
     padding: 20px;
     border: 1px solid #888;
-    width: 80%;
+    width: 60%;
 }
 
-.close {
-    color: #aaa;
+.ad_mdl_close {
+    color: #aaaaaa;
     float: right;
     font-size: 28px;
     font-weight: bold;
 }
 
-.close:hover, .close:focus {
+.ad_mdl_close:hover, .ad_mdl_close:focus {
     color: black;
     text-decoration: none;
     cursor: pointer;
