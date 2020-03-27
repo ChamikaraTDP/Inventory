@@ -15,8 +15,6 @@
 
 @section('js_area')
     <script>
-        'use strict';
-
         var items = @json($items);
         var categories = @json($categories);
 

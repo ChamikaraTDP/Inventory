@@ -17,9 +17,9 @@
         mocha.checkLeaks();
     </script>
 
-    <script src="js/tests.js"></script>
+    <script src="js/inventory.js"></script>
 
-    <script src="vendor/inventory/inventory.js"></script>
+    <script src="vendor/inventory/test.js"></script>
 
     <script class="mocha-exec">
         mocha.run();

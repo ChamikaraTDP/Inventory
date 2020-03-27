@@ -52,7 +52,7 @@
         <label for="isu_date">Date:</label><input id="isu_date" type="date" name="isu_date" required/>
     </div>
     <div style="padding: 2px 10px">
-        <button type="button" class="add_btn sub_btn" onclick="submit_issue()">submit</button>
+        <button id="isu_sub_btn" type="button" class="add_btn sub_btn">submit</button>
     </div>
 </div>
 

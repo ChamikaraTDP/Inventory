@@ -1,8 +1,6 @@
-'use strict';
-
-$(() => {
-    tab_selection(0);
-});
+import { init_add_tab } from './add_items';
+import { init_isu_tab } from './issue_items';
+export { tab_selection };
 
 /**
  * configure color of tabs
@@ -49,28 +47,18 @@ function get_add_tab() {
 
     XHR.addEventListener('load', function(event) {
         console.log('response loaded');
-
-        const grid_area = document.getElementById('grid_area');
-
-        grid_area.innerHTML = event.target.response;
+        document.getElementById('grid_area').innerHTML = event.target.response;
         console.log('Add tab content attached');
-
-        insert_row(-1);
-        init_submit();
+        init_add_tab();
     });
-
     XHR.addEventListener('abort', function(event) {
         console.log('request aborted' + event.target.responseText);
     });
-
     XHR.addEventListener('error', function(event) {
         console.log('something went wrong' + event.target.responseText);
     });
-
     XHR.open('GET', '/add_tab', true);
-
     XHR.setRequestHeader('Content-type', 'text/html; charset=UTF-8');
-
     XHR.send();
 }
 
@@ -84,29 +72,18 @@ function get_issue_tab() {
 
     XHR.addEventListener('load', function(event) {
         console.log('response loaded');
-
-        const grid_area = document.getElementById('grid_area');
-
         const res_obj = JSON.parse(event.target.response);
-        grid_area.innerHTML = res_obj.issue_view;
-
-        set_item_table(res_obj.items);
-        set_stn_drop(res_obj.stations, res_obj.users);
-
+        document.getElementById('grid_area').innerHTML = res_obj.issue_view;
+        init_isu_tab(res_obj.items, res_obj.stations, res_obj.users);
         console.log('Issue tab content attached');
     });
-
     XHR.addEventListener('abort', function(event) {
         console.log('request aborted' + event.target.responseText);
     });
-
     XHR.addEventListener('error', function(event) {
         console.log('something went wrong' + event.target.responseText);
     });
-
     XHR.open('GET', '/issue_tab', true);
-
     XHR.setRequestHeader('Content-type', 'text/html; charset=UTF-8');
-
     XHR.send();
 }

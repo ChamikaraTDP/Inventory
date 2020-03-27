@@ -1,6 +1,6 @@
 <div class="grid_container">
     <div class="grid_middle" id="add_grid_middle">
-        <form id="myForm">
+        <form id="ad_itm_form">
             <div>
                 <ol>
                     <li>
