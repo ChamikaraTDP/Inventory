@@ -74,7 +74,7 @@ function get_issue_tab() {
         console.log('response loaded');
         const res_obj = JSON.parse(event.target.response);
         document.getElementById('grid_area').innerHTML = res_obj.issue_view;
-        init_isu_tab(res_obj.items, res_obj.stations, res_obj.users);
+        init_isu_tab(res_obj.items);
         console.log('Issue tab content attached');
     });
     XHR.addEventListener('abort', function(event) {
