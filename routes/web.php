@@ -20,11 +20,16 @@ Auth::routes();
 //test page
 Route::get('/home', 'HomeController@index')->name('home');
 
-//Show Add items page
-Route::get('/add', 'TransactionController@index')->name('add_items');
+Route::view('/add_tab', 'add_tab');
 
-//Add item form data to db
-Route::post('/send_data', 'TransactionController@send_data')->name('send_data');
+Route::get('/issue_tab', 'TransactionController@load_issue_tab');
+
+Route::get('/inventory', 'HomeController@nav_index')->name('inventory');
+
+//Add item data to db
+Route::post('/add_items', 'TransactionController@add_items')->name('add_items');
+
+Route::post('/issue_items', 'TransactionController@issue_items')->name('issue_items');
 
 
 // Route that will be executed when no other route matches the incoming request

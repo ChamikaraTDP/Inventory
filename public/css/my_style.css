@@ -1,64 +1,118 @@
+/*------------------------------global -----------------------------------*/
 * {
     box-sizing: border-box;
 }
 
-.nv-box {
-    border: 1px solid black;
-}
-
-.grid-container {
-    display: grid;
-    grid-template-columns: 1fr 4fr 1fr;
-    grid-gap: 3px;
-    grid-template-areas: 'left form right';
-    background-color: #2196F3;
-    padding: 5px;
-    font-size: 20px;
-    width: 100%;
-}
-
-.grid-box {
-    grid-area: form;
-    background-color: rgba(255, 255, 255, 0.8);
-    /*text-align: center;*/
-    padding: 5px 0;
-    font-size: 20px;
-}
-
-.nv-box {
-    list-style-type: none;
+/* -------------------------- navigation tab --------------------------- */
+.nv_box {
     margin: 0;
-    padding: 0 20px;
     display: flex;
     flex-flow: row nowrap;
     justify-content: center;
     align-items: flex-end;
     background-color: #a1a1a2;
+    border: 1px solid black;
 }
 
-.nv-box button {
-    flex-basis: 200px;
-    background-color: #cce3f6 ;
+.nv_box button {
+    flex-basis: 140px;
+    background-color: #cce3f6;
     border: none;
     text-decoration: none;
     color: #171a1d;
     text-align: center;
-    font-size: 1.1em;
+    font-size: 0.8rem;
     padding: 5px;
 }
 
-.nv-box button:hover {
+.nv_box button:hover {
     background-color: dodgerblue;
     color: white;
 }
 
-.add-form table, th, td {
-    padding: 2px 5px;
+/*--------------------------- main grid area ------------------------ */
+.grid_container {
+    display: grid;
+    grid-template-columns: 1fr 4fr 1fr;
+    grid-template-areas: 'left middle right';
+    grid-gap: 3px;
+    background-color: #2196F3;
+    padding: 5px;
+    font-size: 0.9rem;
+    width: 100%;
+}
+
+.grid_middle {
+    grid-area: middle;
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+.grid_left {
+    grid-area: left;
+    background-color: #2196F3;
+    padding: 5px 0;
+}
+
+.grid_right {
+    grid-area: right;
+    background-color: #2196F3;
+    padding: 5px 0;
+}
+
+/* -----------------------------issue tab grids------------------- */
+.issue_grid_container {
+    grid-template-columns: 1fr 3fr 2fr;
+    grid-template-areas: 'left middle right';
+    font-size: 0.9rem;
+}
+
+.issue_grid_middle {
+    grid-area: middle;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 5px 0;
+}
+
+.issue_grid_left {
+    grid-area: left;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 5px 0;
+}
+
+.issue_grid_right {
+    grid-area: right;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 5px 0;
+}
+
+/*------------------------ issue tab quantity input field -----------------------*/
+.isu_qan_inp {
+    max-width: 100px;
+    border: 1px solid #555;
+    background-color: inherit;
+    outline: none;
+}
+
+.isu_qan_inp:focus {
+    background-color: white;
+}
+
+/* ----------------------------- add form ------------------------------*/
+#ad_itm_form {
+    padding: 10px;
+}
+
+table {
+    width:100%;
+}
+
+table, th, td {
+    border: 1px solid gray;
+    padding: 2px 10px;
 }
 
 .add_btn , .rm_btn {
-    background-color: white; /* Green */
-    border: none;
+    background-color: white;
+    border: 1px solid #cbcbf0;
     color: #383d41;
     padding: 5px 10px;
     text-align: center;
@@ -66,23 +120,126 @@
     display: inline-block;
     font-size: 0.8em;
     border-radius: 5px;
-    margin: 0 5px;
-    box-shadow: 0 0 4px #818182;
+    /*margin: 0 5px;*/
 }
 
-.add_btn:hover, .rm_btn:hover {
+.rm_btn {
+    margin: 0 0 0 5px;
+}
+
+.add_btn:hover, .rm_btn:hover, .add_btn:focus, .rm_btn:focus {
     color: white;
-    box-shadow: 0 0 4px #818182;
+    box-shadow: 0 0 4px gray;
     cursor: pointer;
 }
 
-.add_btn:hover {
+.add_btn:hover, .add_btn:focus {
     background-color: dodgerblue;
+    border: 1px solid dodgerblue;
 }
 
-.rm_btn:hover {
+.rm_btn:hover, .rm_btn:focus {
     background-color: #FF0C3B;
+    border: 1px solid #FF0C3B;
+}
+
+/*---------------------- bottom description & submit btn ---------------------- */
+.ad_btm_area {
+    padding: 10px 40px;
+}
+
+.ad_sub_btn_dv {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: right;
+}
+
+/* ------------------------------- text input fields ----------------------- */
+.ad_fm_inp[type=text], .ad_fm_inp[type=number]{
+    padding: 2px 5px;
+    display: inline-block;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+}
+
+.ad_fm_inp[type=text]:focus , .ad_fm_inp[type=number]:focus{
+    border: 1px solid #4aa0e6;
+}
+
+/*--------------------------------- issue tab add btn -------------------------------*/
+.isu_ad_btn {
+    padding: 2px 10px;
+}
+
+/*------------------------------ isu tab disabled add btn ---------------------*/
+.ad_btn_dis {
+    background-color: #a1a1a2;
+    color: #383d41;
+}
+
+.ad_btn_dis:hover {
+    color: #383d41;
+    box-shadow: none;
+    cursor: not-allowed;
+    background-color: #a1a1a2;
+    border: 1px solid #cbcbf0;
+}
+
+/*-------------------------------- submit btn on isu tbl------------------------ */
+.sub_btn {
+    font-size: 0.9rem;
+}
+
+.sub_btn:hover, .sub_btn:focus {
+    border-radius: 8px;
+    background-color: white;
+    color: #383d41;
+    box-shadow: none;
 }
 
 
+/*-------------------------------- model background --------------------------*/
+.model {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0, 0, 0);
+    background-color: rgba(0, 0, 0, 0.4);
+}
 
+.mdl_cont {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 60%;
+}
+
+.mdl_close {
+    color: #aaaaaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+
+.mdl_close:hover, .mdl_close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.clearfix::after {
+    content: "";
+    clear: both;
+    display: table;
+}
+
+.mdl_conf_btn {
+    float: right;
+}

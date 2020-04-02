@@ -17,8 +17,8 @@ class TransactionBulk extends Migration
             $table->bigIncrements('id');
             $table->unsignedBigInteger('transaction_id');
             $table->unsignedBigInteger('item_id');
-            $table->integer('quantity')->nullable();
-            $table->integer('unit_price')->nullable();
+            $table->integer('quantity');
+            $table->integer('unit_price')->default(0);
             $table->timestamps();
 
             $table->foreign('transaction_id')->references('id')->on('transactions');

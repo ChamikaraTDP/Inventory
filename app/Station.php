@@ -17,13 +17,13 @@ class Station extends Model
     }
 
     //station have issued many transactions
-    public function issuing_user(){
-        return $this->belongsTo('App\Transaction', 'issuing_station');
+    public function issuing_transactions(){
+        return $this->hasMany('App\Transaction', 'issuing_station');
     }
 
     //station have received many transactions
-    public function receiving_user(){
-        return $this->belongsTo('App\Transaction', 'receiving_station');
+    public function receiving_transactions(){
+        return $this->hasMany('App\Transaction', 'receiving_station');
     }
 
 }

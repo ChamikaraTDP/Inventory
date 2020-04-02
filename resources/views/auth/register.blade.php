@@ -29,7 +29,7 @@
                             <label for="branch" class="col-md-4 col-form-label text-md-right">{{ __('Branch') }}</label>
 
                             <div class="col-md-6">
-                                <input id="branch" type="text" class="form-control @error('branch') is-invalid @enderror" name="branch" value="{{ old('branch') }}" required autocomplete="branch" autofocus>
+                                <input id="branch" type="number" class="form-control @error('branch') is-invalid @enderror" name="branch" value="{{ old('branch') }}" required autocomplete="branch" autofocus>
 
                                 @error('branch')
                                 <span class="invalid-feedback" role="alert">

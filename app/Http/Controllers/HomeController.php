@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Transaction;
-use Illuminate\Http\Request;
+use App\Category;
+use App\Item;
+use App\Station;
+use App\User;
 
 class HomeController extends Controller
 {
@@ -26,5 +28,16 @@ class HomeController extends Controller
     {
         return view('home');
     }
+
+    public function nav_index()
+    {
+        $categories = Category::select('id', 'name')->get();
+        $items = Item::select('id', 'name', 'type', 'category_id')->get();
+        $stations = Station::select('id', 'name')->get();
+        $users = User::select('id', 'name', 'station_id')->get();
+
+        return view('layouts.top_navigation', compact('categories', 'items', 'stations', 'users'));
+    }
+
 
 }
