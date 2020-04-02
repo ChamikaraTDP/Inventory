@@ -1,4 +1,4 @@
-var expect = chai.expect;
+let expect = chai.expect;
 
 describe('make_list', function() {
     describe('parameters', function() {
