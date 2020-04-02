@@ -16,12 +16,10 @@ class CreateItemsTable extends Migration
         Schema::create('items', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name');
-            $table->string('type')->default('bulk');
-            $table->string('unit')->default('count');
+            $table->boolean('type')->default(0);
             $table->unsignedInteger('so_threshold')->nullable();
             $table->unsignedBigInteger('category_id')->nullable();
             $table->unsignedBigInteger('sub_category_id')->nullable();
-            $table->boolean('serial_req')->default(0);
             $table->timestamps();
 
             $table->foreign('category_id')->references('id')->on('categories');
