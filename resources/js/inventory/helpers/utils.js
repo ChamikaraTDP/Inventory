@@ -4,6 +4,9 @@ function get_parent(current, parent) {
     while ( current.parentNode &&  current.tagName !== parent ) {
         current =  current.parentNode;
     }
+    if (current.tagName !== parent) {
+        throw new Error(' no ' +  parent +' tag found as an ancestor ');
+    }
     return current;
 }
 
