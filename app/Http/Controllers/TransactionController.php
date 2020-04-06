@@ -54,13 +54,8 @@ class TransactionController extends Controller
         }
 
         $user = auth()->user();
-        $attach_arr = [];
-        $itm_count = 0;
-        $last_id = [];
-        $first_id = 0;
-        $itm_ids = [];
-        $transaction = new Transaction;
 
+        $transaction = new Transaction;
         $transaction->issuing_date = $form_data->date;
         $transaction->receipt_no = $form_data->issue_no;
         $transaction->received_by = $user->id;
@@ -70,6 +65,7 @@ class TransactionController extends Controller
         $transaction->description = $form_data->description;
         $transaction->save();
 
+        $attach_arr = [];
         for($i = 0; $i < $bulk_count; $i++){
             $attach_arr[$itm_bulk[$i]->item_id] = array('quantity' => $itm_bulk[$i]->quantity,
                 'unit_price' => $itm_bulk[$i]->unit_price);
@@ -78,13 +74,14 @@ class TransactionController extends Controller
         $transaction->bulk_items()->attach($attach_arr);
 
         $attach_arr = [];
+        $itm_count = 0;
 
         for($i = 0; $i < $inv_count; $i++){
             $quan = $itm_inv[$i]->quantity;
             $itm_count += $quan;
             for($j = 0; $j < $quan; $j++){
                 array_push($attach_arr,['item_id' => $itm_inv[$i]->item_id,
-                    'price' => $itm_inv[$i]->unit_price]);
+                    'price' => $itm_inv[$i]->unit_price, 'current_station' => $user->station_id]);
             }
         }
 
@@ -92,6 +89,7 @@ class TransactionController extends Controller
 
         $last_id = DB::select('select LAST_INSERT_ID() as id');
         $first_id = $last_id[0]->id;
+        $itm_ids = [];
 
         for($k = 0; $k < $itm_count; $k++){
             array_push($itm_ids, ($first_id + $k) );
@@ -105,16 +103,15 @@ class TransactionController extends Controller
 
     /**
      * handle queries and filtering of data
+     * @param $station
      * @return array
      */
-    private function get_avail_items(){
-        $station = auth()->user()->station_id;
-        $avl_items = [];
+    private function get_bulk_items($station){
 
         $rcv_items = DB::table('transactions')
             ->join('transaction_bulk', 'transactions.id', '=', 'transaction_bulk.transaction_id')
             ->join('items', 'transaction_bulk.item_id', '=', 'items.id')
-            ->select('item_id', DB::raw('sum(quantity) as quantity'), 'name', 'category_id' )
+            ->select('item_id', DB::raw('sum(quantity) as quantity'), 'name', 'category_id', 'type' )
             ->where('transactions.receiving_station', $station)
             ->groupBy('item_id')
             ->get();
@@ -122,10 +119,12 @@ class TransactionController extends Controller
         $isu_items = DB::table('transactions')
             ->join('transaction_bulk', 'transactions.id', '=', 'transaction_bulk.transaction_id')
             ->join('items', 'transaction_bulk.item_id', '=', 'items.id')
-            ->select('item_id', DB::raw('sum(quantity) as quantity'), 'name', 'category_id' )
+            ->select('item_id', DB::raw('sum(quantity) as quantity'), 'name', 'category_id', 'type' )
             ->where('transactions.issuing_station', $station)
             ->groupBy('item_id')
             ->get();
+
+        $avl_items = [];
 
         foreach ($rcv_items as $rcv_item) {
             $isu_itm =  $isu_items->firstWhere('item_id', $rcv_item->item_id);
@@ -146,14 +145,30 @@ class TransactionController extends Controller
         return $avl_items;
     }
 
+    public function get_inv_items($station){
+
+        $inv_items = DB::table('inventory_items')
+            ->join('items', 'inventory_items.item_id', '=', 'items.id')
+            ->select('item_id', DB::raw('count(item_id) as quantity'), 'name', 'category_id', 'type')
+            ->where('current_station', $station)
+            ->groupBy('item_id')
+            ->get();
+
+        return $inv_items;
+
+    }
+
 
     /**
      * response with station & user data
-     *
-     * @return \Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
     public function load_issue_tab() {
-        $avl_items = $this->get_avail_items();
+        $station = auth()->user()->station_id;
+
+        $bulk_items = $this->get_bulk_items($station);
+        $inv_items = $this->get_inv_items($station);
+
+        $avl_items = array_merge($bulk_items, $inv_items->toArray());
 
         if(is_array($avl_items)) {
             try {
@@ -184,9 +199,6 @@ class TransactionController extends Controller
 
         $items = $issue->items;
         $details = $issue->details;
-        $attach_arr = [];
-        $item_count = count($items);
-        $avl_items = $this->get_avail_items();
 
         $transaction = new Transaction;
         $transaction->issuing_date = $details->isu_date;
@@ -197,11 +209,15 @@ class TransactionController extends Controller
         $transaction->transaction_type = "stn_to_stn";
         $transaction->save();
 
+        $attach_arr = [];
+        $item_count = count($items);
         for($i = 0; $i < $item_count; $i++){
             $attach_arr[$items[$i]->item_id] = array('quantity' => $items[$i]->quantity);
         }
 
         $transaction->bulk_items()->attach($attach_arr);
+
+        $avl_items = $this->get_bulk_items();
 
         if(is_array($avl_items)) {
 

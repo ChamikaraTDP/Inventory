@@ -1,4 +1,4 @@
-export { get_parent, make_list };
+export { get_parent, make_list, toggle_display};
 
 function get_parent(current, parent) {
     while ( current.parentNode &&  current.tagName !== parent ) {
@@ -9,6 +9,7 @@ function get_parent(current, parent) {
     }
     return current;
 }
+
 
 /**
  *
@@ -28,4 +29,13 @@ function make_list(categories) {
         list += `<option value="${x.id}">${x.name}`;
     }
     return list;
+}
+
+function toggle_display(node) {
+    if(node.style.display !== 'none') {
+        node.style.display = 'none';
+    }
+    else {
+        node.style.display = 'block';
+    }
 }

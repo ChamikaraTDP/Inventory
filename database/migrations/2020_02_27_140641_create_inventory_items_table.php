@@ -19,10 +19,11 @@ class CreateInventoryItemsTable extends Migration
             $table->text('item_code')->nullable();
             $table->text('serial_no')->nullable();
             $table->integer('price')->nullable();
-            $table->text('current_station')->nullable();
+            $table->unsignedBigInteger('current_station')->nullable();
             $table->timestamps();
 
             $table->foreign('item_id')->references('id')->on('items');
+            $table->foreign('current_station')->references('id')->on('stations');
         });
     }
 
