@@ -1,4 +1,4 @@
-import { make_list, get_parent } from './helpers/utils';
+import { make_list, get_parent, toggle_display } from './helpers/utils';
 export { init_isu_tab };
 
 function init_isu_tab(avl_itms) {
@@ -45,12 +45,28 @@ function set_item_table(avl_itms) {
         cell3.setAttribute('data-cell', 'available');
         cell4.innerHTML = `<input class='isu_qan_inp' type='number' min='1' max='${ item.quantity }'
             name="isu_qt"/>`;
-        cell5.innerHTML = `<button class='add_btn isu_ad_btn' type='button' id='isu_ad_btn_${ item.item_id }'
+
+        if(item.type) {
+            cell5.innerHTML = `<button id='fil_btn_${item.item_id}' class='add_btn isu_ad_btn' type='button'
+                name="isu_fil_btn">Fill</button>
+            <button  id='isu_drop_btn_${item.item_id}' style="display: none" class='add_btn isu_ad_btn'
+                type='button' name="inv_drop_btn">V</button>
+            <button  id='add_all_btn_${item.item_id}' style="display: none" class='add_btn isu_ad_btn'
+                type='button' name="add_all_btn">All</button>
+            <button  id='rmv_all_btn_${item.item_id}' style="display: none" class='add_btn isu_ad_btn'
+                type='button' name="rmv_all_btn">Rmv</button>`;
+
+            cell5.querySelector("button[name='isu_fil_btn']").addEventListener('click', function() {
+                disp_fil_list(this);
+            });
+        } else {
+            cell5.innerHTML = `<button class='add_btn isu_ad_btn' type='button' id='isu_ad_btn_${item.item_id}'
             name="isu_ad_btn">Add</button>`;
 
-        cell5.querySelector("button[name='isu_ad_btn']").addEventListener('click', function () {
-            itm_to_isu(this);
-        });
+            cell5.querySelector("button[name='isu_ad_btn']").addEventListener('click', function() {
+                itm_to_isu(this);
+            });
+        }
 
         row.appendChild(cell1);
         row.appendChild(cell2);
@@ -60,6 +76,104 @@ function set_item_table(avl_itms) {
 
         tbl_bd.appendChild(row);
     }
+
+    function disp_fil_list(node) {
+        let prn_row = get_parent(node, 'TR');
+
+        let isu_node = prn_row.querySelector("input[name='isu_qt']");
+        let isu_qt = isu_node.value;
+        let av_qt = prn_row.querySelector("td[data-cell='available']").innerText;
+
+        isu_qt = Number(isu_qt);
+        av_qt = Number(av_qt);
+
+        if (isu_qt > av_qt || isu_qt < 1) {
+            alert('invalid input');
+        } else {
+
+            let row = document.createElement('TR');
+            let cell = document.createElement('TD');
+            cell.setAttribute('colspan', '5');
+
+            let inp_list = ``;
+
+            for(let i = 0; i < isu_qt; i++) {
+                inp_list += `<div>
+                    <span>
+                        <input id="" class='ad_fm_inp' type='text' name='itm_code' placeholder="item code">
+                    </span>
+                    <span>
+                        <input class='ad_fm_inp' type='text' name='serial_no' placeholder="serial number">
+                    </span>
+                    <span>
+                        <button class='add_btn isu_ad_btn' type='button' name="inv_ad_btn">Add</button>
+                    </span>
+                    <span>
+                        <button class='rm_btn isu_ad_btn' type='button' name="inv_itm_rm_btn">Remove</button>
+                    </span>
+                    </div>`;
+            }
+
+            cell.innerHTML = inp_list;
+            const rm_btns = cell.querySelectorAll("button[name='inv_itm_rm_btn']");
+
+            for(let btn of rm_btns){
+                btn.addEventListener('click', function() {
+                    get_parent(this, 'DIV').remove();
+                });
+            }
+
+            row.appendChild(cell);
+            prn_row.insertAdjacentElement('afterend', row);
+
+
+            let drop = prn_row.querySelector("button[name='inv_drop_btn']");
+            let rmv_all = prn_row.querySelector("button[name='rmv_all_btn']");
+            let fil_btn = prn_row.querySelector("button[name='isu_fil_btn']");
+            let add_all = prn_row.querySelector("button[name='add_all_btn']");
+
+            rmv_all.addEventListener('click', remove_row);
+
+            function remove_row() {
+                let row1 = row,
+                    fil = fil_btn,
+                    add = add_all,
+                    drp = drop,
+                    isu = isu_node;
+
+                drp.removeEventListener('click', toggle_display);
+                this.removeEventListener('click', remove_row);
+
+                drp.style.display = 'none';
+                this.style.display = 'none';
+                add.style.display = 'none';
+                fil.style.display = 'inline-block';
+                isu.disabled = false;
+
+                row1.remove();
+            }
+
+            drop.addEventListener('click', toggle_display);
+
+            function toggle_display() {
+                let row1 = row;
+                if(row1.style.display !== 'none') {
+                    row1.style.display = 'none';
+                }
+                else {
+                    row1.style.display = 'table-row';
+                }
+            }
+
+            isu_node.disabled = true;
+            fil_btn.style.display = 'none';
+            drop.style.display = 'inline-block';
+            add_all.style.display = 'inline-block';
+            rmv_all.style.display = 'inline-block';
+
+        }
+    }
+
 
     /**
      * add items to issuing list
