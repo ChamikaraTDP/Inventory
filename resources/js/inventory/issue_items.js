@@ -1,4 +1,4 @@
-import { make_list, get_parent, toggle_display } from './helpers/utils';
+import { make_list, get_parent } from './helpers/utils';
 export { init_isu_tab };
 
 function init_isu_tab(avl_itms) {
@@ -47,13 +47,14 @@ function set_item_table(avl_itms) {
             name="isu_qt"/>`;
 
         if(item.type) {
-            cell5.innerHTML = `<button id='fil_btn_${item.item_id}' class='add_btn isu_ad_btn' type='button'
+            cell5.innerHTML = `
+             <button id='fil_btn_${item.item_id}' class='add_btn isu_ad_btn' type='button'
                 name="isu_fil_btn">Fill</button>
-            <button  id='isu_drop_btn_${item.item_id}' style="display: none" class='add_btn isu_ad_btn'
+             <button  id='isu_drop_btn_${item.item_id}' style="display: none" class='add_btn isu_ad_btn'
                 type='button' name="inv_drop_btn">V</button>
-            <button  id='add_all_btn_${item.item_id}' style="display: none" class='add_btn isu_ad_btn'
+             <button  id='add_all_btn_${item.item_id}' style="display: none" class='add_btn isu_ad_btn'
                 type='button' name="add_all_btn">All</button>
-            <button  id='rmv_all_btn_${item.item_id}' style="display: none" class='add_btn isu_ad_btn'
+             <button  id='rmv_all_btn_${item.item_id}' style="display: none" class='rm_btn isu_ad_btn'
                 type='button' name="rmv_all_btn">Rmv</button>`;
 
             cell5.querySelector("button[name='isu_fil_btn']").addEventListener('click', function() {
@@ -78,27 +79,58 @@ function set_item_table(avl_itms) {
     }
 
     function disp_fil_list(node) {
-        let prn_row = get_parent(node, 'TR');
+        const prn_row = get_parent(node, 'TR');
 
-        let isu_node = prn_row.querySelector("input[name='isu_qt']");
-        let isu_qt = isu_node.value;
-        let av_qt = prn_row.querySelector("td[data-cell='available']").innerText;
-
-        isu_qt = Number(isu_qt);
-        av_qt = Number(av_qt);
+        const isu_node = prn_row.querySelector("input[name='isu_qt']");
+        const isu_qt = Number(isu_node.value);
+        const av_qt = Number( prn_row.querySelector("td[data-cell='available']").innerText );
 
         if (isu_qt > av_qt || isu_qt < 1) {
-            alert('invalid input');
-        } else {
-
-            let row = document.createElement('TR');
-            let cell = document.createElement('TD');
+            alert('invalid quantity!');
+        }
+        else  {
+            const row = document.createElement('TR');
+            const cell = document.createElement('TD');
             cell.setAttribute('colspan', '5');
 
-            let inp_list = ``;
+            append_divs(cell, isu_qt, prn_row);
 
-            for(let i = 0; i < isu_qt; i++) {
-                inp_list += `<div>
+            if(isu_qt < av_qt){
+                cell.querySelectorAll(
+                    "button[name='inv_itm_ad_btn']")[isu_qt - 1].style.display = 'inline-block';
+            }
+
+            row.appendChild(cell);
+            prn_row.insertAdjacentElement('afterend', row);
+
+            const drop = prn_row.querySelector("button[name='inv_drop_btn']");
+            const rmv_all = prn_row.querySelector("button[name='rmv_all_btn']");
+            const fil_btn = prn_row.querySelector("button[name='isu_fil_btn']");
+            const add_all = prn_row.querySelector("button[name='add_all_btn']");
+
+            rmv_all.addEventListener('click', function () {
+                remove_row(row, prn_row);
+            });
+
+            drop.addEventListener('click', function () {
+                tog_row_disp(row);
+            });
+
+            isu_node.disabled = true;
+            fil_btn.style.display = 'none';
+            drop.style.display = 'inline-block';
+            add_all.style.display = 'inline-block';
+            rmv_all.style.display = 'inline-block';
+        }
+
+
+        function append_divs(cell, num, prn_row) {
+
+            let div = {};
+
+            for (let i = 0; i < num; i++) {
+                div = document.createElement('DIV');
+                div.innerHTML = `
                     <span>
                         <input id="" class='ad_fm_inp' type='text' name='itm_code' placeholder="item code">
                     </span>
@@ -111,66 +143,76 @@ function set_item_table(avl_itms) {
                     <span>
                         <button class='rm_btn isu_ad_btn' type='button' name="inv_itm_rm_btn">Remove</button>
                     </span>
-                    </div>`;
+                    <span>
+                        <button style="display: none" class='add_btn isu_ad_btn' type='button'
+                            name="inv_itm_ad_btn">+</button>
+                    </span>`;
+
+                div.querySelector("button[name='inv_itm_rm_btn']").
+                    addEventListener('click', function(event) {
+                        rm_function(event.target, prn_row, cell);
+                    });
+
+                cell.appendChild(div);
+            }
+        }
+
+
+        function rm_function(rm_btn, prn_row, cell) {
+            const isu_node = prn_row.querySelector("input[name='isu_qt']");
+            const av_qt = Number( prn_row.querySelector("td[data-cell='available']").innerText );
+            const count = Number(isu_node.value) - 1;
+
+            isu_node.value = count;
+
+            if(count === 0){
+                remove_row(cell.parentNode, prn_row);
+                return;
             }
 
-            cell.innerHTML = inp_list;
-            const rm_btns = cell.querySelectorAll("button[name='inv_itm_rm_btn']");
+            const parent_div =  get_parent(rm_btn, 'DIV');
+            const last_div = cell.lastElementChild;
 
-            for(let btn of rm_btns){
-                btn.addEventListener('click', function() {
-                    get_parent(this, 'DIV').remove();
-                });
+            if( parent_div.isSameNode(last_div) ) {
+                let prev_btn = parent_div.previousSibling.querySelector("button[name='inv_itm_ad_btn']");
+                prev_btn.style.display = 'inline-block';
+            }
+            else if( count === av_qt - 1 ) {
+                last_div.querySelector("button[name='inv_itm_ad_btn']").style.display = 'inline-block';
             }
 
-            row.appendChild(cell);
-            prn_row.insertAdjacentElement('afterend', row);
+            parent_div.remove();
+        }
 
 
-            let drop = prn_row.querySelector("button[name='inv_drop_btn']");
-            let rmv_all = prn_row.querySelector("button[name='rmv_all_btn']");
-            let fil_btn = prn_row.querySelector("button[name='isu_fil_btn']");
-            let add_all = prn_row.querySelector("button[name='add_all_btn']");
+        function remove_row(row, prn_row) {
 
-            rmv_all.addEventListener('click', remove_row);
+            const drp = prn_row.querySelector("button[name='inv_drop_btn']");
+            const rmv = prn_row.querySelector("button[name='rmv_all_btn']");
+            const fil = prn_row.querySelector("button[name='isu_fil_btn']");
+            const add = prn_row.querySelector("button[name='add_all_btn']");
+            const isu = prn_row.querySelector("input[name='isu_qt']");
 
-            function remove_row() {
-                let row1 = row,
-                    fil = fil_btn,
-                    add = add_all,
-                    drp = drop,
-                    isu = isu_node;
+            drp.removeEventListener('click', tog_row_disp);
+            rmv.removeEventListener('click', remove_row);
 
-                drp.removeEventListener('click', toggle_display);
-                this.removeEventListener('click', remove_row);
+            drp.style.display = 'none';
+            rmv.style.display = 'none';
+            add.style.display = 'none';
+            fil.style.display = 'inline-block';
+            isu.disabled = false;
 
-                drp.style.display = 'none';
-                this.style.display = 'none';
-                add.style.display = 'none';
-                fil.style.display = 'inline-block';
-                isu.disabled = false;
+            row.remove();
+        }
 
-                row1.remove();
+
+        function tog_row_disp(row) {
+            if(row.style.display !== 'none') {
+                row.style.display = 'none';
             }
-
-            drop.addEventListener('click', toggle_display);
-
-            function toggle_display() {
-                let row1 = row;
-                if(row1.style.display !== 'none') {
-                    row1.style.display = 'none';
-                }
-                else {
-                    row1.style.display = 'table-row';
-                }
+            else {
+                row.style.display = 'table-row';
             }
-
-            isu_node.disabled = true;
-            fil_btn.style.display = 'none';
-            drop.style.display = 'inline-block';
-            add_all.style.display = 'inline-block';
-            rmv_all.style.display = 'inline-block';
-
         }
     }
 
