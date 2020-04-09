@@ -81,8 +81,7 @@ function set_item_table(avl_itms) {
     function disp_fil_list(node) {
         const prn_row = get_parent(node, 'TR');
 
-        const isu_node = prn_row.querySelector("input[name='isu_qt']");
-        const isu_qt = Number(isu_node.value);
+        const isu_qt = Number(prn_row.querySelector("input[name='isu_qt']").value);
         const av_qt = Number( prn_row.querySelector("td[data-cell='available']").innerText );
 
         if (isu_qt > av_qt || isu_qt < 1) {
@@ -96,36 +95,18 @@ function set_item_table(avl_itms) {
             append_divs(cell, isu_qt, prn_row);
 
             if(isu_qt < av_qt){
-                cell.querySelectorAll(
-                    "button[name='inv_itm_ad_btn']")[isu_qt - 1].style.display = 'inline-block';
+                cell.querySelectorAll("button[name='inv_itm_ad_btn']")[isu_qt - 1]
+                    .style.display = 'inline-block';
             }
 
             row.appendChild(cell);
             prn_row.insertAdjacentElement('afterend', row);
 
-            const drop = prn_row.querySelector("button[name='inv_drop_btn']");
-            const rmv_all = prn_row.querySelector("button[name='rmv_all_btn']");
-            const fil_btn = prn_row.querySelector("button[name='isu_fil_btn']");
-            const add_all = prn_row.querySelector("button[name='add_all_btn']");
-
-            rmv_all.addEventListener('click', function () {
-                remove_row(row, prn_row);
-            });
-
-            drop.addEventListener('click', function () {
-                tog_row_disp(row);
-            });
-
-            isu_node.disabled = true;
-            fil_btn.style.display = 'none';
-            drop.style.display = 'inline-block';
-            add_all.style.display = 'inline-block';
-            rmv_all.style.display = 'inline-block';
+            toggle_btns(row, prn_row);
         }
 
 
         function append_divs(cell, num, prn_row) {
-
             let div = {};
 
             for (let i = 0; i < num; i++) {
@@ -148,9 +129,14 @@ function set_item_table(avl_itms) {
                             name="inv_itm_ad_btn">+</button>
                     </span>`;
 
-                div.querySelector("button[name='inv_itm_rm_btn']").
+                div.querySelector("button[name='inv_itm_rm_btn']")
+                    .addEventListener('click', function() {
+                        rm_function(div, prn_row, cell);
+                    });
+
+                div.querySelector("button[name='inv_itm_ad_btn']").
                     addEventListener('click', function(event) {
-                        rm_function(event.target, prn_row, cell);
+                        add_div(event.target, cell, prn_row );
                     });
 
                 cell.appendChild(div);
@@ -158,7 +144,7 @@ function set_item_table(avl_itms) {
         }
 
 
-        function rm_function(rm_btn, prn_row, cell) {
+        function rm_function(cur_div, prn_row, cell) {
             const isu_node = prn_row.querySelector("input[name='isu_qt']");
             const av_qt = Number( prn_row.querySelector("td[data-cell='available']").innerText );
             const count = Number(isu_node.value) - 1;
@@ -170,23 +156,42 @@ function set_item_table(avl_itms) {
                 return;
             }
 
-            const parent_div =  get_parent(rm_btn, 'DIV');
             const last_div = cell.lastElementChild;
 
-            if( parent_div.isSameNode(last_div) ) {
-                let prev_btn = parent_div.previousSibling.querySelector("button[name='inv_itm_ad_btn']");
+            if( cur_div.isSameNode(last_div) ) {
+                let prev_btn = cur_div.previousSibling.querySelector("button[name='inv_itm_ad_btn']");
                 prev_btn.style.display = 'inline-block';
             }
             else if( count === av_qt - 1 ) {
                 last_div.querySelector("button[name='inv_itm_ad_btn']").style.display = 'inline-block';
             }
 
-            parent_div.remove();
+            cur_div.remove();
+        }
+
+
+        function add_div(ad_btn, cell, prn_row) {
+            const isu_node = prn_row.querySelector("input[name='isu_qt']");
+            const av_qt = Number( prn_row.querySelector("td[data-cell='available']").innerText );
+            const count = Number(isu_node.value) + 1;
+
+            if( count <= av_qt) {
+                ad_btn.style.display = 'none';
+                append_divs(cell, 1, prn_row);
+                isu_node.value = count;
+
+                if( count < av_qt ) {
+                    cell.lastElementChild.querySelector(
+                        "button[name='inv_itm_ad_btn']").style.display = 'inline-block';
+                }
+            }
+            else {
+                alert(' cannot add items more than available ');
+            }
         }
 
 
         function remove_row(row, prn_row) {
-
             const drp = prn_row.querySelector("button[name='inv_drop_btn']");
             const rmv = prn_row.querySelector("button[name='rmv_all_btn']");
             const fil = prn_row.querySelector("button[name='isu_fil_btn']");
@@ -213,6 +218,29 @@ function set_item_table(avl_itms) {
             else {
                 row.style.display = 'table-row';
             }
+        }
+
+
+        function toggle_btns(row, prn_row) {
+            const isu_node = prn_row.querySelector("input[name='isu_qt']");
+            const drop = prn_row.querySelector("button[name='inv_drop_btn']");
+            const rmv_all = prn_row.querySelector("button[name='rmv_all_btn']");
+            const fil_btn = prn_row.querySelector("button[name='isu_fil_btn']");
+            const add_all = prn_row.querySelector("button[name='add_all_btn']");
+
+            rmv_all.addEventListener('click', function() {
+                remove_row(row, prn_row);
+            });
+
+            drop.addEventListener('click', function() {
+                tog_row_disp(row);
+            });
+
+            isu_node.disabled = true;
+            fil_btn.style.display = 'none';
+            drop.style.display = 'inline-block';
+            add_all.style.display = 'inline-block';
+            rmv_all.style.display = 'inline-block';
         }
     }
 
@@ -357,10 +385,11 @@ function handle_submit() {
             let md_tbl_rows = ``;
             for (let i = 1; i < row_len; i++) {
 
-                md_tbl_rows += `<tr> 
-                                <td>${rows[i].querySelector("td[data-cell='name']").innerText}</td>
-                                <td>${rows[i].querySelector("td[data-cell='quantity']").innerText}</td>                                
-                            </tr>`;
+                md_tbl_rows += `
+                    <tr> 
+                       <td>${rows[i].querySelector("td[data-cell='name']").innerText}</td>
+                       <td>${rows[i].querySelector("td[data-cell='quantity']").innerText}</td>                                
+                    </tr>`;
             }
 
             ad_mdl_cont += `${ md_tbl_rows }</tbody>
