@@ -1,4 +1,4 @@
-import { make_list, get_parent } from './helpers/utils';
+import { make_list, get_parent, tog_row_disp } from './helpers/utils';
 export { init_isu_tab };
 
 function init_isu_tab(avl_itms) {
@@ -129,9 +129,14 @@ function set_item_table(avl_itms) {
                             name="inv_itm_ad_btn">+</button>
                     </span>`;
 
+                div.querySelector("button[name='inv_ad_btn']")
+                    .addEventListener('click', function(event) {
+                        inv_to_isu(event.target, prn_row);
+                    });
+
                 div.querySelector("button[name='inv_itm_rm_btn']")
-                    .addEventListener('click', function() {
-                        rm_function(div, prn_row, cell);
+                    .addEventListener('click', function(event) {
+                        rm_function(event.target, prn_row, cell);
                     });
 
                 div.querySelector("button[name='inv_itm_ad_btn']").
@@ -144,7 +149,8 @@ function set_item_table(avl_itms) {
         }
 
 
-        function rm_function(cur_div, prn_row, cell) {
+        function rm_function(rm_btn, prn_row, cell) {
+            const cur_div = get_parent(rm_btn, 'DIV');
             const isu_node = prn_row.querySelector("input[name='isu_qt']");
             const av_qt = Number( prn_row.querySelector("td[data-cell='available']").innerText );
             const count = Number(isu_node.value) - 1;
@@ -198,26 +204,19 @@ function set_item_table(avl_itms) {
             const add = prn_row.querySelector("button[name='add_all_btn']");
             const isu = prn_row.querySelector("input[name='isu_qt']");
 
-            drp.removeEventListener('click', tog_row_disp);
-            rmv.removeEventListener('click', remove_row);
+            let drp_clone = drp.cloneNode(true);
+            let rmv_clone = rmv.cloneNode(true);
 
-            drp.style.display = 'none';
-            rmv.style.display = 'none';
+            drp.parentNode.replaceChild(drp_clone, drp);
+            rmv.parentNode.replaceChild(rmv_clone, rmv);
+
+            drp_clone.style.display = 'none';
+            rmv_clone.style.display = 'none';
             add.style.display = 'none';
             fil.style.display = 'inline-block';
             isu.disabled = false;
 
             row.remove();
-        }
-
-
-        function tog_row_disp(row) {
-            if(row.style.display !== 'none') {
-                row.style.display = 'none';
-            }
-            else {
-                row.style.display = 'table-row';
-            }
         }
 
 
@@ -236,14 +235,152 @@ function set_item_table(avl_itms) {
                 tog_row_disp(row);
             });
 
+            add_all.addEventListener('click', function() {
+                add_all_itms(row, prn_row);
+            });
+
             isu_node.disabled = true;
             fil_btn.style.display = 'none';
             drop.style.display = 'inline-block';
             add_all.style.display = 'inline-block';
             rmv_all.style.display = 'inline-block';
         }
+
     }
 
+    function add_all_itms(row, prn_row) {
+        const add_btns = row.firstChild.querySelectorAll("button[name='inv_ad_btn']:enabled");
+
+        for(let btn of add_btns) {
+            if( !inv_to_isu(btn, prn_row) ) {
+                break;
+            }
+        }
+    }
+
+
+    function inv_to_isu(ad_btn, prn_row) {
+        const info_div = get_parent(ad_btn, 'DIV');
+        const item_inp = info_div.querySelector("input[name='itm_code']");
+        const item_code = item_inp.value;
+        const seri_inp = info_div.querySelector("input[name='serial_no']");
+        const serial = seri_inp.value;
+
+        if(item_code === '' && serial === '') {
+            alert('You must fill Item code or Serial number!');
+            return false;
+        }
+
+        ad_btn.disabled = true;
+        const rm_btn = info_div.querySelector("button[name='inv_itm_rm_btn']");
+        rm_btn.disabled = true;
+        item_inp.disabled = true;
+        seri_inp.disabled = true;
+        ad_btn.setAttribute('class', 'add_btn isu_ad_btn ad_btn_dis');
+        rm_btn.setAttribute('class', 'add_btn isu_ad_btn ad_btn_dis');
+
+        const rm_all = prn_row.querySelector("button[name='rmv_all_btn']");
+
+        let cell1 = prn_row.querySelector("td[data-cell='name']");
+        const itm_id = cell1.getAttribute('data-item-id');
+        let itm_row = document.getElementById('inv_itm_' + itm_id);
+
+        const div = document.createElement('DIV');
+        div.setAttribute('data-row', 'info');
+
+        div.innerHTML = '<span class="width_40" data-cell="code">' +
+                item_code +
+            '</span><span class="width_40" data-cell="serial">' +
+            serial +
+           '</span><button class="rm_btn isu_ad_btn" type="button" name="inv_itm_rm_btn">Remove</button>';
+
+        div.querySelector("button[name='inv_itm_rm_btn']").addEventListener('click', function() {
+            const qun_node = itm_row.querySelector("td[data-cell='quantity']");
+            const qun = Number(qun_node.innerText) - 1;
+
+            if(qun === 0) {
+                itm_row.nextElementSibling.remove();
+                itm_row.remove();
+
+                rm_all.setAttribute('class', 'rm_btn isu_ad_btn');
+                rm_all.disabled = false;
+            }
+            else {
+                div.remove();
+                qun_node.innerText = qun;
+            }
+
+            ad_btn.disabled = false;
+            rm_btn.disabled = false;
+            item_inp.disabled = false;
+            seri_inp.disabled = false;
+            ad_btn.setAttribute('class', 'add_btn isu_ad_btn');
+            rm_btn.setAttribute('class', 'rm_btn isu_ad_btn');
+
+        });
+
+        if(itm_row) {
+            const cell = itm_row.nextElementSibling.firstChild;
+            cell.appendChild(div);
+            const qun_node = itm_row.querySelector("td[data-cell='quantity']");
+            qun_node.innerText = Number(qun_node.innerText) + 1;
+        }
+        else {
+            rm_all.disabled = true;
+            rm_all.setAttribute('class', 'add_btn isu_ad_btn ad_btn_dis');
+
+            itm_row = document.createElement('TR');
+            const cell2 = document.createElement('TD');
+            const cell3 = document.createElement('TD');
+
+            itm_row.setAttribute('id', 'inv_itm_' + itm_id);
+            itm_row.setAttribute('data-item-type', '1');
+            cell1 = cell1.cloneNode(true);
+            cell2.innerHTML = '1';
+            cell2.setAttribute('data-cell', 'quantity');
+            cell3.innerHTML = '<button class="add_btn isu_ad_btn" type="button" name="isu_tog_btn">V</button>' +
+               '<button class="rm_btn isu_ad_btn" type="button" name="rmv_all_btn">Rmv</button>';
+
+            itm_row.appendChild(cell1);
+            itm_row.appendChild(cell2);
+            itm_row.appendChild(cell3);
+
+            const code_row = document.createElement('TR');
+            const cell = document.createElement('TD');
+            const labl_div = document.createElement('DIV');
+
+            labl_div.setAttribute('data-row', 'desc');
+            labl_div.innerHTML = '<span class="width_40">Item Code</span>' +
+                '<span class="width_40">Serial Number</span>';
+
+            cell.setAttribute('colspan', '3');
+            cell.appendChild(labl_div);
+            cell.appendChild(div);
+            code_row.appendChild(cell);
+
+            cell3.querySelector("button[name='isu_tog_btn']")
+                .addEventListener('click', function (){
+                    tog_row_disp(code_row);
+                });
+
+            cell3.querySelector("button[name='rmv_all_btn']").addEventListener('click', function() {
+                const rm_btns = code_row.querySelectorAll("button[name='inv_itm_rm_btn']");
+
+                for (let btn of rm_btns) {
+                    btn.click();
+                }
+            });
+
+            document.getElementById('isu_tbl_bd').appendChild(itm_row);
+            itm_row.insertAdjacentElement('afterend', code_row);
+        }
+
+        return true;
+    }
+
+    /*${info_div.querySelector("input[name='item_code']").value}
+    *
+    *  ${info_div.querySelector("input[name='serial_no']").value}*/
 
     /**
      * add items to issuing list
@@ -267,6 +404,7 @@ function set_item_table(avl_itms) {
             const cell2 = document.createElement('TD');
             const cell3 = document.createElement('TD');
 
+            row.setAttribute('data-item-type', '0');
             cell1 = cell1.cloneNode(true);
             cell2.innerHTML = String(isu_qt);
             cell2.setAttribute('data-cell', 'quantity');
@@ -336,7 +474,8 @@ function set_isu_list() {
         });
 
         const list = make_list(stn_users);
-        document.getElementById('rcv_usr_dv').innerHTML = `<label for='rcv_usr'>Receiving Officer:</label>
+        document.getElementById('rcv_usr_dv').innerHTML = `
+            <label for='rcv_usr'>Receiving Officer:</label>
             <select id='rcv_usr' name='rcv_usr'>${ list }</script>`;
     }
 }
@@ -355,8 +494,8 @@ function handle_submit() {
     display_model();
 
     function display_model() {
-        row_len = isu_tbl.rows.length;
         rows = isu_tbl.rows;
+        row_len = rows.length;
 
         if (row_len < 2) {
             alert('No items selected!');
@@ -368,8 +507,8 @@ function handle_submit() {
                 `<div id="isu_mdl_cont" class="mdl_cont">
                 <span id="isu_mdl_close" class="mdl_close">&times</span>
                 <div>
-                    <div>Issue Note</div>                    
-                    <div>Issued Station: (need to find)</div>
+                    <div>Issue Note</div>
+                    <div>Issued Station: ${ window.get_user().station_id }</div>
                     <div>Received Station: ${ rcv_stn.options[rcv_stn.selectedIndex].text }</div>
                     <div>Issued to: ${ rcv_usr.options[rcv_usr.selectedIndex].text }</div>
                     <div>
@@ -385,11 +524,48 @@ function handle_submit() {
             let md_tbl_rows = ``;
             for (let i = 1; i < row_len; i++) {
 
-                md_tbl_rows += `
+                if( rows[i].getAttribute('data-item-type') ===  '1') {
+                    md_tbl_rows += `
+                        <tr> 
+                           <td>${ rows[i].querySelector("td[data-cell='name']").innerText }</td>
+                           <td>${ rows[i].querySelector("td[data-cell='quantity']").innerText }</td>                                
+                        </tr>
+                        <tr>
+                            <td colspan="2">`;
+
+                    i++;
+
+                    let code_divs = rows[i].querySelectorAll("div[data-row='info']");
+                    let div_count = code_divs.length;
+
+                    md_tbl_rows += `
+                        <div>
+                          <span class="width_50">Item Code</span>
+                          <span class="width_50">Serial Number</span>
+                        </div>`;
+
+                    for(let m = 0; m < div_count; m++) {
+                        md_tbl_rows += `
+                          <div>
+                            <span class="width_50">
+                              ${ code_divs[m].querySelector("span[data-cell='code']").innerText }
+                            </span>
+                            <span class="width_50">
+                              ${ code_divs[m].querySelector("span[data-cell='serial']").innerText }
+                            </span>
+                          </div>`;
+                    }
+
+                    md_tbl_rows += `</td></tr>`;
+
+                }
+                else {
+                    md_tbl_rows += `
                     <tr> 
-                       <td>${rows[i].querySelector("td[data-cell='name']").innerText}</td>
-                       <td>${rows[i].querySelector("td[data-cell='quantity']").innerText}</td>                                
+                       <td>${ rows[i].querySelector("td[data-cell='name']").innerText }</td>
+                       <td>${ rows[i].querySelector("td[data-cell='quantity']").innerText }</td>                                
                     </tr>`;
+                }
             }
 
             ad_mdl_cont += `${ md_tbl_rows }</tbody>
@@ -422,24 +598,31 @@ function handle_submit() {
     function submit_issue() {
         if (row_len < 2) {
             alert('No items selected!');
-        } else if (isu_date.value === '') {
+        }
+        else if (isu_date.value === '') {
             alert('Please fill the required fields!');
-        } else {
+        }
+        else {
             display_loading();
+
             const isu_list = {};
             isu_list.items = [];
             let rows = isu_tbl.rows;
+
             for (let m = 1; m < row_len; m++) {
                 isu_list.items.push({
-                    'item_id': rows[m].querySelector("td[data-cell='name']").getAttribute('data-item-id'),
+                    'item_id': rows[m].querySelector(
+                        "td[data-cell='name']").getAttribute('data-item-id'),
                     'quantity': rows[m].querySelector("td[data-cell='quantity']").innerHTML,
                 });
             }
+
             isu_list.details = {
                 'rcv_stn': rcv_stn.value,
                 'rcv_usr': rcv_usr.value,
                 'isu_date': isu_date.value,
             };
+
             console.log('data sending');
 
             const XHR = new XMLHttpRequest();
@@ -488,7 +671,7 @@ function handle_submit() {
         function display_success() {
             const mdl_cont = isu_mdl.querySelector('#isu_mdl_cont');
             mdl_cont.innerHTML = `<span id="ad_mdl_close" class="mdl_close">&times;</span>
-                    <p>Items added successfully:)</p>`;
+                    <p>Issue successful :)</p>`;
             mdl_cont.querySelector('#ad_mdl_close').addEventListener('click', function() {
                 isu_mdl.style.display = 'none';
             });
