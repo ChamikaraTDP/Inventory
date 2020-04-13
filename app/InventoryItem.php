@@ -6,9 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class InventoryItem extends Model
 {
-    protected $fillable = [
-        'price', 'username', 'station_id', 'password',
-    ];
+
     //InventoryItem : Item -> M : 1
     public function item(){
         return $this->belongsTo('App\Item');

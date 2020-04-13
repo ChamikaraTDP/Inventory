@@ -4,7 +4,7 @@ export { init_isu_tab };
 function init_isu_tab(avl_itms) {
     set_item_table(avl_itms);
     set_isu_list();
-    document.getElementById('isu_sub_btn').addEventListener('click', handle_submit);
+    document.getElementById('isu_sub_btn').addEventListener('click', display_model);
 }
 
 /**
@@ -294,30 +294,31 @@ function set_item_table(avl_itms) {
             serial +
            '</span><button class="rm_btn isu_ad_btn" type="button" name="inv_itm_rm_btn">Remove</button>';
 
-        div.querySelector("button[name='inv_itm_rm_btn']").addEventListener('click', function() {
-            const qun_node = itm_row.querySelector("td[data-cell='quantity']");
-            const qun = Number(qun_node.innerText) - 1;
+        div.querySelector("button[name='inv_itm_rm_btn']")
+            .addEventListener('click', function() {
+                const qun_node = itm_row.querySelector("td[data-cell='quantity']");
+                const qun = Number(qun_node.innerText) - 1;
 
-            if(qun === 0) {
-                itm_row.nextElementSibling.remove();
-                itm_row.remove();
+                if(qun === 0) {
+                    itm_row.nextElementSibling.remove();
+                    itm_row.remove();
 
-                rm_all.setAttribute('class', 'rm_btn isu_ad_btn');
-                rm_all.disabled = false;
-            }
-            else {
-                div.remove();
-                qun_node.innerText = qun;
-            }
+                    rm_all.setAttribute('class', 'rm_btn isu_ad_btn');
+                    rm_all.disabled = false;
+                }
+                else {
+                    div.remove();
+                    qun_node.innerText = qun;
+                }
 
-            ad_btn.disabled = false;
-            rm_btn.disabled = false;
-            item_inp.disabled = false;
-            seri_inp.disabled = false;
-            ad_btn.setAttribute('class', 'add_btn isu_ad_btn');
-            rm_btn.setAttribute('class', 'rm_btn isu_ad_btn');
+                ad_btn.disabled = false;
+                rm_btn.disabled = false;
+                item_inp.disabled = false;
+                seri_inp.disabled = false;
+                ad_btn.setAttribute('class', 'add_btn isu_ad_btn');
+                rm_btn.setAttribute('class', 'rm_btn isu_ad_btn');
 
-        });
+            });
 
         if(itm_row) {
             const cell = itm_row.nextElementSibling.firstChild;
@@ -338,7 +339,7 @@ function set_item_table(avl_itms) {
             cell1 = cell1.cloneNode(true);
             cell2.innerHTML = '1';
             cell2.setAttribute('data-cell', 'quantity');
-            cell3.innerHTML = '<button class="add_btn isu_ad_btn" type="button" name="isu_tog_btn">V</button>' +
+            cell3.innerHTML = '<button class="add_btn isu_ad_btn" type="button" name="isu_tog_btn">V</button>'+
                '<button class="rm_btn isu_ad_btn" type="button" name="rmv_all_btn">Rmv</button>';
 
             itm_row.appendChild(cell1);
@@ -363,13 +364,14 @@ function set_item_table(avl_itms) {
                     tog_row_disp(code_row);
                 });
 
-            cell3.querySelector("button[name='rmv_all_btn']").addEventListener('click', function() {
-                const rm_btns = code_row.querySelectorAll("button[name='inv_itm_rm_btn']");
+            cell3.querySelector("button[name='rmv_all_btn']")
+                .addEventListener('click', function() {
+                    const rm_btns = code_row.querySelectorAll("button[name='inv_itm_rm_btn']");
 
-                for (let btn of rm_btns) {
-                    btn.click();
-                }
-            });
+                    for (let btn of rm_btns) {
+                        btn.click();
+                    }
+                });
 
             document.getElementById('isu_tbl_bd').appendChild(itm_row);
             itm_row.insertAdjacentElement('afterend', code_row);
@@ -481,30 +483,25 @@ function set_isu_list() {
 }
 
 
-function handle_submit() {
+function display_model() {
     const isu_tbl = document.getElementById('isu_lst_tbl'),
         rcv_stn = document.getElementById('rcv_stn'),
         rcv_usr = document.getElementById('rcv_usr'),
         isu_date = document.getElementById('isu_date'),
         isu_mdl = document.getElementById('isu_mdl');
 
-    let row_len = 0,
-        rows = {};
-
-    display_model();
-
-    function display_model() {
-        rows = isu_tbl.rows;
+    const rows = isu_tbl.rows,
         row_len = rows.length;
 
-        if (row_len < 2) {
-            alert('No items selected!');
-        } else if (isu_date.value === '') {
-            alert('Please fill the required fields!');
-        }
-        else {
-            let ad_mdl_cont =
-                `<div id="isu_mdl_cont" class="mdl_cont">
+    if (row_len < 2) {
+        alert('No items selected!');
+    }
+    else if (isu_date.value === '') {
+        alert('Please fill the required fields!');
+    }
+    else {
+        let ad_mdl_cont =
+            `<div id="isu_mdl_cont" class="mdl_cont">
                 <span id="isu_mdl_close" class="mdl_close">&times</span>
                 <div>
                     <div>Issue Note</div>
@@ -521,54 +518,55 @@ function handle_submit() {
                             </thead>
                             <tbody id="isu_mt_bd">`;
 
-            let md_tbl_rows = ``;
-            for (let i = 1; i < row_len; i++) {
+        let md_tbl_rows = ``;
+        for (let i = 1; i < row_len; i++) {
 
-                if( rows[i].getAttribute('data-item-type') ===  '1') {
-                    md_tbl_rows += `
-                        <tr> 
-                           <td>${ rows[i].querySelector("td[data-cell='name']").innerText }</td>
-                           <td>${ rows[i].querySelector("td[data-cell='quantity']").innerText }</td>                                
-                        </tr>
-                        <tr>
-                            <td colspan="2">`;
+            if( rows[i].getAttribute('data-item-type') ===  '1') {
+                md_tbl_rows += `
+                    <tr> 
+                       <td>${ rows[i].querySelector("td[data-cell='name']").innerText }</td>
+                       <td>${ rows[i].querySelector("td[data-cell='quantity']").innerText }</td>                                
+                    </tr>
+                    <tr>
+                        <td colspan="2">`;
 
-                    i++;
+                i++;
 
-                    let code_divs = rows[i].querySelectorAll("div[data-row='info']");
-                    let div_count = code_divs.length;
+                let code_divs = rows[i].querySelectorAll("div[data-row='info']");
+                let div_count = code_divs.length;
 
+                md_tbl_rows += `
+                    <div>
+                      <span class="width_40">Item Code</span>
+                      <span class="width_40">Serial Number</span>
+                    </div>`;
+
+                for(let m = 0; m < div_count; m++) {
                     md_tbl_rows += `
                         <div>
-                          <span class="width_50">Item Code</span>
-                          <span class="width_50">Serial Number</span>
+                            <span class="width_40">
+                                ${ code_divs[m].querySelector("span[data-cell='code']").innerText }
+                            </span>
+                            <span class="width_40">
+                                ${ code_divs[m].querySelector("span[data-cell='serial']").innerText }
+                            </span>
                         </div>`;
-
-                    for(let m = 0; m < div_count; m++) {
-                        md_tbl_rows += `
-                          <div>
-                            <span class="width_50">
-                              ${ code_divs[m].querySelector("span[data-cell='code']").innerText }
-                            </span>
-                            <span class="width_50">
-                              ${ code_divs[m].querySelector("span[data-cell='serial']").innerText }
-                            </span>
-                          </div>`;
-                    }
-
-                    md_tbl_rows += `</td></tr>`;
-
                 }
-                else {
-                    md_tbl_rows += `
+
+                md_tbl_rows += `</td></tr>`;
+
+            }
+            else {
+                md_tbl_rows += `
                     <tr> 
                        <td>${ rows[i].querySelector("td[data-cell='name']").innerText }</td>
                        <td>${ rows[i].querySelector("td[data-cell='quantity']").innerText }</td>                                
                     </tr>`;
-                }
             }
+        }
 
-            ad_mdl_cont += `${ md_tbl_rows }</tbody>
+        ad_mdl_cont += `        ${ md_tbl_rows }
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -582,99 +580,137 @@ function handle_submit() {
                 </div>
             </div>`;
 
-            isu_mdl.innerHTML = ad_mdl_cont;
+        isu_mdl.innerHTML = ad_mdl_cont;
 
-            isu_mdl.querySelector('#isu_conf_btn').addEventListener('click', submit_issue);
-            isu_mdl.querySelector('#isu_mdl_close').addEventListener('click', function() {
-                isu_mdl.style.display = 'none';
-            });
-            isu_mdl.style.display = 'block';
-        }
+        isu_mdl.querySelector('#isu_conf_btn').addEventListener('click', function(){
+            submit_issue(isu_tbl, isu_date, rcv_stn, rcv_usr, isu_mdl);
+        });
+        isu_mdl.querySelector('#isu_mdl_close').addEventListener('click', function() {
+            isu_mdl.style.display = 'none';
+        });
+        isu_mdl.style.display = 'block';
     }
+}
 
-    /**
-     * submit issue & reset form with updated data
-     */
-    function submit_issue() {
-        if (row_len < 2) {
-            alert('No items selected!');
-        }
-        else if (isu_date.value === '') {
-            alert('Please fill the required fields!');
-        }
-        else {
-            display_loading();
 
-            const isu_list = {};
-            isu_list.items = [];
-            let rows = isu_tbl.rows;
+/**
+ * submit issue & reset form with updated data
+ */
+function submit_issue( isu_tbl, isu_date, rcv_stn, rcv_usr, isu_mdl) {
 
-            for (let m = 1; m < row_len; m++) {
-                isu_list.items.push({
-                    'item_id': rows[m].querySelector(
-                        "td[data-cell='name']").getAttribute('data-item-id'),
-                    'quantity': rows[m].querySelector("td[data-cell='quantity']").innerHTML,
-                });
-            }
+    display_loading(isu_mdl);
 
-            isu_list.details = {
-                'rcv_stn': rcv_stn.value,
-                'rcv_usr': rcv_usr.value,
-                'isu_date': isu_date.value,
+    const isu_list = {
+        'items': {
+            'bulk': [],
+            'inv': [],
+        },
+
+        'details': {},
+    };
+
+    const rows = isu_tbl.rows,
+        row_len = rows.length;
+
+    for (let m = 1; m < row_len; m++) {
+
+        if( rows[m].getAttribute('data-item-type') ===  '1') {
+
+            let inv_itm = {
+                'item_id': rows[m].querySelector(
+                    "td[data-cell='name']").getAttribute('data-item-id'),
+                'quantity': rows[m].querySelector("td[data-cell='quantity']").innerText,
+                'codes': [],
             };
 
-            console.log('data sending');
+            m++;
 
-            const XHR = new XMLHttpRequest();
+            let code_divs = rows[m].querySelectorAll("div[data-row='info']");
+            let div_count = code_divs.length;
 
-            XHR.addEventListener('load', function(event) {
-                console.log('issue response loaded');
-
-                const res_obj = JSON.parse(event.target.response);
-                console.log(res_obj.msg);
-
-                reset_form(res_obj.items);
-                display_success();
-            });
-            XHR.addEventListener('abort', function(event) {
-                console.log('request aborted' + event.target.responseText);
-            });
-            XHR.addEventListener('error', function(event) {
-                console.log('something went wrong' + event.target.responseText);
-            });
-            XHR.open('POST', '/issue_items', true);
-            XHR.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-            // eslint-disable-next-line no-undef
-            XHR.send('_token=' + getCSRF() + '&' + 'issue=' + JSON.stringify(isu_list));
-        }
-
-        function reset_form(items) {
-            try {
-                let i = row_len - 1;
-                for (i; i > 0; i--) {
-                    rows[i].remove();
-                }
-                isu_date.value = '';
-                document.getElementById('itm_tbl_bd').innerHTML = '';
-                set_item_table(items);
-                console.log('isu form resets successfully');
-            } catch (e) {
-                console.log('error occurred while resetting the isu form' + e);
+            for(let j = 0; j < div_count; j++) {
+                inv_itm.codes.push(
+                    {
+                        'code': code_divs[j].querySelector("span[data-cell='code']").innerText,
+                        'serial': code_divs[j].querySelector("span[data-cell='serial']").innerText,
+                    }
+                );
             }
-        }
 
-        function display_loading() {
-            const mdl_cont = isu_mdl.querySelector('#isu_mdl_cont');
-            mdl_cont.innerHTML = `<p>processing request please wait...</p>`;
+            isu_list.items.inv.push(inv_itm);
         }
-
-        function display_success() {
-            const mdl_cont = isu_mdl.querySelector('#isu_mdl_cont');
-            mdl_cont.innerHTML = `<span id="ad_mdl_close" class="mdl_close">&times;</span>
-                    <p>Issue successful :)</p>`;
-            mdl_cont.querySelector('#ad_mdl_close').addEventListener('click', function() {
-                isu_mdl.style.display = 'none';
-            });
+        else {
+            isu_list.items.bulk.push(
+                {
+                    'item_id': rows[m].querySelector(
+                        "td[data-cell='name']").getAttribute('data-item-id'),
+                    'quantity': rows[m].querySelector("td[data-cell='quantity']").innerText,
+                }
+            );
         }
     }
+
+    isu_list.details = {
+        'rcv_stn': rcv_stn.value,
+        'rcv_usr': rcv_usr.value,
+        'isu_date': isu_date.value,
+    };
+
+    console.log('data sending');
+
+    const XHR = new XMLHttpRequest();
+
+    XHR.addEventListener('load', function(event) {
+        console.log('issue response loaded');
+
+        const res_obj = JSON.parse(event.target.response);
+        console.log(res_obj.msg);
+
+        reset_form(res_obj.items, rows);
+        display_success(isu_mdl);
+    });
+    XHR.addEventListener('abort', function(event) {
+        console.log('request aborted' + event.target.responseText);
+    });
+    XHR.addEventListener('error', function(event) {
+        console.log('something went wrong' + event.target.responseText);
+    });
+    XHR.open('POST', '/issue_items', true);
+    XHR.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+    XHR.send('_token=' + window.getCSRF() + '&' + 'issue=' + JSON.stringify(isu_list));
+}
+
+function reset_form(items, rows) {
+
+    try {
+        let i = rows.length - 1;
+
+        for (i; i > 0; i--) {
+            rows[i].remove();
+        }
+
+        document.getElementById('itm_tbl_bd').innerHTML = '';
+
+        set_item_table(items);
+
+        console.log('isu form resets successfully');
+    }
+    catch (e) {
+        console.log('error occurred while resetting the isu form' + e);
+    }
+}
+
+function display_loading(isu_mdl) {
+    const mdl_cont = isu_mdl.querySelector('#isu_mdl_cont');
+    mdl_cont.innerHTML = `<p>processing request please wait...</p>`;
+}
+
+function display_success(isu_mdl) {
+    const mdl_cont = isu_mdl.querySelector('#isu_mdl_cont');
+    mdl_cont.innerHTML = `<span id="ad_mdl_close" class="mdl_close">&times;</span>
+        <p>Issue successful :)</p>`;
+    mdl_cont.querySelector('#ad_mdl_close').addEventListener('click', function() {
+        isu_mdl.style.display = 'none';
+    });
 }

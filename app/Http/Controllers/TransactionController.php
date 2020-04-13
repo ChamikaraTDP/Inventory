@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\InventoryItem;
 use App\Item;
 use App\Transaction;
 use Illuminate\Http\Request;
@@ -178,11 +179,11 @@ class TransactionController extends Controller
 
             } catch (Throwable $e) {
 
-                return response('error occurred during view rendering', 500);
+                return response(' error occurred during view rendering ', 500);
             }
         }
         else {
-            return response('item ' . $avl_items . ' has a negative quantity!', 500);
+            return response(' error occurred when loading the items ', 500);
         }
     }
 
@@ -192,32 +193,70 @@ class TransactionController extends Controller
      *   send back updated item data
      *
      * @param Request $request issue details
-     * @return \Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\JsonResponse|\Illuminate\Http\Response
+     * @return Response
      */
     public function issue_items(Request $request) {
         $issue = json_decode($request->input('issue'));
 
-        $items = $issue->items;
+        $itm_bulk = $issue->items->bulk;
+        $itm_inv = $issue->items->inv;
         $details = $issue->details;
+        $user = auth()->user();
 
         $transaction = new Transaction;
         $transaction->issuing_date = $details->isu_date;
         $transaction->received_by = $details->rcv_usr;
         $transaction->receiving_station = $details->rcv_stn;
-        $transaction->issued_by = auth()->user()->id;
-        $transaction->issuing_station = auth()->user()->station_id;
+        $transaction->issued_by = $user->id;
+        $transaction->issuing_station = $user->station_id;
         $transaction->transaction_type = "stn_to_stn";
         $transaction->save();
 
         $attach_arr = [];
-        $item_count = count($items);
-        for($i = 0; $i < $item_count; $i++){
-            $attach_arr[$items[$i]->item_id] = array('quantity' => $items[$i]->quantity);
+        $itm_count = count($itm_bulk);
+
+        if($itm_count > 0) {
+            for ($i = 0; $i < $itm_count; $i++) {
+                $attach_arr[$itm_bulk[$i]->item_id] = array('quantity' => $itm_bulk[$i]->quantity);
+            }
+
+            $transaction->bulk_items()->attach($attach_arr);
         }
 
-        $transaction->bulk_items()->attach($attach_arr);
+        $inv_count = count($itm_inv);
 
-        $avl_items = $this->get_bulk_items();
+        if($inv_count > 0) {
+            $itm_ids = [];
+
+            foreach ($itm_inv as $itm) {
+                $itm_count = intval($itm->quantity);
+                $db_items = InventoryItem::where(
+                    [
+                        ['item_id', '=', $itm->item_id],
+                        ['current_station', '=', $user->station_id],
+                    ])
+                    ->take($itm_count)
+                    ->get();
+
+                for ($n = 0; $n < $itm_count; $n++) {
+                    $db_items[$n]->item_code = $itm->codes[$n]->code;
+                    $db_items[$n]->serial_no = $itm->codes[$n]->serial;
+                    $db_items[$n]->current_station = $details->rcv_stn;
+
+                    $db_items[$n]->save();
+
+                    array_push($itm_ids, $db_items[$n]->id);
+                }
+            }
+
+            $transaction->inventory_items()->attach($itm_ids);
+        }
+
+
+        $bulk_items = $this->get_bulk_items($user->station_id);
+        $inv_items = $this->get_inv_items($user->station_id);
+
+        $avl_items = array_merge($bulk_items, $inv_items->toArray());
 
         if(is_array($avl_items)) {
 
