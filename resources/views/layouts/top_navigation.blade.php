@@ -40,8 +40,14 @@
             return user;
         }
 
+        function get_user_station() {
+            return get_stations().find( function(station) {
+                return station.id === get_user().station_id;
+            });
+        }
+
         function getCSRF() {
-             return '{{csrf_token()}}';
+             return '{{ csrf_token() }}';
         }
     </script>
 

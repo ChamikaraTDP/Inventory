@@ -243,3 +243,18 @@ table, th, td {
 .mdl_conf_btn {
     float: right;
 }
+
+
+/*issue list span width*/
+.width_40 {
+    display: inline-block;
+    width: 40%;
+    overflow: auto;
+}
+
+/*issue list model span width*/
+.width_50 {
+    display: inline-block;
+    width: 50%;
+    overflow: auto;
+}

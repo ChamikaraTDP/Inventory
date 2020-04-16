@@ -18,6 +18,8 @@
         "eslint-config-google": "^0.14.0",
         "eslint-plugin-vue": "^6.2.2",
         "jquery": "^3.4.1",
+        "jspdf": "^1.5.3",
+        "jspdf-autotable": "^3.4.3",
         "laravel-mix": "^5.0.1",
         "lodash": "^4.17.13",
         "mocha": "^7.1.1",

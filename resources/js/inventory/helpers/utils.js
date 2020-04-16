@@ -1,4 +1,4 @@
-export { get_parent, make_list, toggle_display};
+export { get_parent, make_list, toggle_disp, tog_row_disp};
 
 function get_parent(current, parent) {
     while ( current.parentNode &&  current.tagName !== parent ) {
@@ -31,11 +31,22 @@ function make_list(categories) {
     return list;
 }
 
-function toggle_display(node) {
-    if(node.style.display !== 'none') {
-        node.style.display = 'none';
+
+function toggle_disp(row) {
+    if(row.style.display !== 'none') {
+        row.style.display = 'none';
     }
     else {
-        node.style.display = 'block';
+        row.style.display = 'block';
+    }
+}
+
+
+function tog_row_disp(row) {
+    if(row.style.display !== 'none') {
+        row.style.display = 'none';
+    }
+    else {
+        row.style.display = 'table-row';
     }
 }
