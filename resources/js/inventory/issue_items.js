@@ -1,4 +1,6 @@
 import { make_list, get_parent, tog_row_disp } from './helpers/utils';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 export { init_isu_tab };
 
 function init_isu_tab(avl_itms) {
@@ -488,9 +490,8 @@ function display_model() {
         rcv_stn = document.getElementById('rcv_stn'),
         rcv_usr = document.getElementById('rcv_usr'),
         isu_date = document.getElementById('isu_date'),
-        isu_mdl = document.getElementById('isu_mdl');
-
-    const rows = isu_tbl.rows,
+        isu_mdl = document.getElementById('isu_mdl'),
+        rows = isu_tbl.rows,
         row_len = rows.length;
 
     if (row_len < 2) {
@@ -500,16 +501,33 @@ function display_model() {
         alert('Please fill the required fields!');
     }
     else {
-        let ad_mdl_cont =
+        const isu_list = {
+            'items': {
+                'bulk': [],
+                'inv': [],
+            },
+
+            'details': {
+                rcv_stn: rcv_stn.options[rcv_stn.selectedIndex].text,
+                rcv_usr: rcv_usr.options[rcv_usr.selectedIndex].text,
+                isu_date: isu_date.value,
+                isu_stn: window.get_user_station().name,
+                isu_usr: window.get_user().name,
+            },
+        };
+
+
+        let isu_mdl_cont =
             `<div id="isu_mdl_cont" class="mdl_cont">
                 <span id="isu_mdl_close" class="mdl_close">&times</span>
                 <div>
-                    <div>Issue Note</div>
-                    <div>Issued Station: ${ window.get_user().station_id }</div>
-                    <div>Received Station: ${ rcv_stn.options[rcv_stn.selectedIndex].text }</div>
-                    <div>Issued to: ${ rcv_usr.options[rcv_usr.selectedIndex].text }</div>
+                    <div style="text-align:center; font-size:1.1rem">Issue Note</div>
+                    <div>Issued Station: ${ isu_list.details.isu_stn }</div>
+                    <div>Received Station: ${ isu_list.details.rcv_stn }</div>
+                    <div>Issued to: ${ isu_list.details.rcv_usr }</div>
+                    <br>
                     <div>
-                        <table id="ad_mdl_tbl">
+                        <table id="isu_mdl_tbl">
                             <thead>
                                 <tr>
                                     <th>Description of Stores</th>
@@ -522,10 +540,16 @@ function display_model() {
         for (let i = 1; i < row_len; i++) {
 
             if( rows[i].getAttribute('data-item-type') ===  '1') {
+                let inv_itm = {
+                    'name': rows[i].querySelector("td[data-cell='name']").innerText,
+                    'quantity': rows[i].querySelector("td[data-cell='quantity']").innerText,
+                    'codes': [],
+                };
+
                 md_tbl_rows += `
                     <tr> 
-                       <td>${ rows[i].querySelector("td[data-cell='name']").innerText }</td>
-                       <td>${ rows[i].querySelector("td[data-cell='quantity']").innerText }</td>                                
+                       <td>${ inv_itm.name }</td>
+                       <td>${ inv_itm.quantity }</td>                                
                     </tr>
                     <tr>
                         <td colspan="2">`;
@@ -542,61 +566,217 @@ function display_model() {
                     </div>`;
 
                 for(let m = 0; m < div_count; m++) {
+                    inv_itm.codes.push({
+                        'code': code_divs[m].querySelector("span[data-cell='code']").innerText,
+                        'serial': code_divs[m].querySelector("span[data-cell='serial']").innerText,
+                    });
+
                     md_tbl_rows += `
                         <div>
                             <span class="width_40">
-                                ${ code_divs[m].querySelector("span[data-cell='code']").innerText }
+                                ${ inv_itm.codes[m].code }
                             </span>
                             <span class="width_40">
-                                ${ code_divs[m].querySelector("span[data-cell='serial']").innerText }
+                                ${ inv_itm.codes[m].serial }
                             </span>
                         </div>`;
                 }
 
                 md_tbl_rows += `</td></tr>`;
 
+                isu_list.items.inv.push(inv_itm);
+
             }
             else {
+
+                let bulk = {
+                    'name': rows[i].querySelector("td[data-cell='name']").innerText,
+                    'quantity': rows[i].querySelector("td[data-cell='quantity']").innerText,
+                };
+
                 md_tbl_rows += `
                     <tr> 
-                       <td>${ rows[i].querySelector("td[data-cell='name']").innerText }</td>
-                       <td>${ rows[i].querySelector("td[data-cell='quantity']").innerText }</td>                                
+                       <td>${ bulk.name }</td>
+                       <td>${ bulk.quantity }</td>                                
                     </tr>`;
+
+                isu_list.items.bulk.push(bulk);
+
             }
         }
 
-        ad_mdl_cont += `        ${ md_tbl_rows }
+        isu_mdl_cont += `        ${ md_tbl_rows }
                             </tbody>
                         </table>
                     </div>
                 </div>
+                <br>
                 <div class="clearfix">
                     <p>Issued on ${ isu_date.value } and the issue duly entered.</p>
                     <br>
                     <div>................................</div>
-                    <div>(name of the officer)</div>
-                    <div>Issuing Officer</div>
+                    <div>${ isu_list.details.isu_usr }</div>
+                    <div>(Issuing Officer)</div>
                     <button id="isu_conf_btn" type="button" class="add_btn mdl_conf_btn">Confirm</button>
                 </div>
             </div>`;
 
-        isu_mdl.innerHTML = ad_mdl_cont;
+        isu_mdl.innerHTML = isu_mdl_cont;
 
         isu_mdl.querySelector('#isu_conf_btn').addEventListener('click', function(){
-            submit_issue(isu_tbl, isu_date, rcv_stn, rcv_usr, isu_mdl);
+            submit_issue(isu_tbl, isu_date, rcv_stn, rcv_usr, isu_mdl, isu_list);
+            // create_pdf(isu_list);
         });
+
         isu_mdl.querySelector('#isu_mdl_close').addEventListener('click', function() {
             isu_mdl.style.display = 'none';
         });
+
         isu_mdl.style.display = 'block';
     }
 }
+
+function create_pdf(isu_list) {
+    const pageWidth = 8.3,
+        lineHeight = 1.2,
+        margin = 0.5,
+        maxLineWidth = pageWidth - margin * 2,
+        fontSize = 12,
+        ptsPerInch = 72,
+        oneLineHeight = (fontSize * lineHeight) / ptsPerInch,
+        inv_itms = isu_list.items.inv,
+        inv_len = inv_itms.length,
+        doc = new jsPDF({
+            unit: "in",
+            lineHeight: lineHeight,
+        });
+
+    doc.setFontStyle("bold")
+        .setFont("helvetica", "neue")
+        .setFontSize(fontSize)
+        .text(
+            "Issue Note",
+            pageWidth/2,
+            margin + oneLineHeight,
+            { align: "center" }
+        );
+
+    doc.setFontStyle("normal")
+        .text(`Issued Station: ${ window.get_user_station().name }`, margin, margin + 3 * oneLineHeight)
+        .text(`Received Station: ${ isu_list.details.rcv_stn }`, margin, margin + 4 * oneLineHeight)
+        .text(`Received Officer: ${ isu_list.details.rcv_usr }`, margin, margin + 5 * oneLineHeight);
+
+    doc.autoTable({
+        startY: margin + 6 * oneLineHeight,
+        margin: 0.5,
+        head: [ ['Description of Stores', 'Quantity'] ],
+        body: data(isu_list, oneLineHeight),
+        tableLineColor: 0,
+        tableLineWidth: 0.01,
+        styles: {
+            lineColor: 0,
+            lineWidth: 0.01,
+            font: 'times',
+            fontSize: fontSize,
+            textColor: 10,
+        },
+        headStyles: {
+            fillColor: 210,
+        },
+        didDrawCell: function (data) {
+
+            if (data.row.section === 'body' && data.row.index < inv_len * 2  && data.row.index % 2 !== 0) {
+                let itm_in = Math.floor(data.row.index / 2);
+                let codes = inv_itms[itm_in].codes;
+                let code_len = codes.length;
+
+                doc.text(
+                    `Item code`,
+                    data.cell.x + 1,
+                    data.cell.y + oneLineHeight
+                );
+
+                doc.text(
+                    `Serial Number`,
+                    data.cell.x + 3.5,
+                    data.cell.y + oneLineHeight
+                );
+
+                for (let i = 0; i < code_len; i++) {
+                    doc.text(
+                        `${ codes[i].code }`,
+                        data.cell.x + 1,
+                        data.cell.y + (i + 2) * oneLineHeight
+                    );
+
+                    doc.text(
+                        `${ codes[i].serial }`,
+                        data.cell.x + 3.5,
+                        data.cell.y + (i + 2) * oneLineHeight
+                    );
+                }
+
+            }
+
+        },
+
+    });
+
+    let finalY = doc.previousAutoTable.finalY;
+    doc.text(`Issue made on ${ isu_list.details.isu_date } and issue is duly entered.`,
+        margin, finalY + 2 * oneLineHeight);
+
+    doc.text(`................................`, margin, finalY + 6 * oneLineHeight);
+    doc.text(`${ window.get_user().name }`, margin, finalY + 7 * oneLineHeight);
+    doc.text(`(Issuing Officer)`, margin, finalY + 8 * oneLineHeight);
+
+    doc.save('test.pdf');
+
+}
+
+function data(list, line_height) {
+    let body = [];
+    items = list.items.inv;
+    rowCount = items.length;
+
+    for (let j = 0; j < rowCount; j++){
+        body.push([
+            items[j].name,
+            items[j].quantity
+        ]);
+        body.push([
+            {
+                content: '',
+                colSpan: 2,
+                styles: {
+                    minCellHeight: ( (Number(items[j].quantity) + 2) * line_height ),
+                    halign: 'center',
+                    valign: 'center',
+                    fillColor: 230,
+                },
+            },
+        ]);
+    }
+
+    let items = list.items.bulk;
+    let rowCount = items.length;
+
+    for (let j = 0; j < rowCount; j++) {
+        body.push([
+            items[j].name,
+            items[j].quantity
+        ]);
+    }
+
+    return body;
+}
+
 
 
 /**
  * submit issue & reset form with updated data
  */
-function submit_issue( isu_tbl, isu_date, rcv_stn, rcv_usr, isu_mdl) {
+function submit_issue( isu_tbl, isu_date, rcv_stn, rcv_usr, isu_mdl, pdf_list) {
 
     display_loading(isu_mdl);
 
@@ -667,7 +847,7 @@ function submit_issue( isu_tbl, isu_date, rcv_stn, rcv_usr, isu_mdl) {
         console.log(res_obj.msg);
 
         reset_form(res_obj.items, rows);
-        display_success(isu_mdl);
+        display_success(isu_mdl, pdf_list);
     });
     XHR.addEventListener('abort', function(event) {
         console.log('request aborted' + event.target.responseText);
@@ -701,16 +881,25 @@ function reset_form(items, rows) {
     }
 }
 
+
 function display_loading(isu_mdl) {
     const mdl_cont = isu_mdl.querySelector('#isu_mdl_cont');
     mdl_cont.innerHTML = `<p>processing request please wait...</p>`;
 }
 
-function display_success(isu_mdl) {
+
+function display_success(isu_mdl, pdf_list) {
     const mdl_cont = isu_mdl.querySelector('#isu_mdl_cont');
+
     mdl_cont.innerHTML = `<span id="ad_mdl_close" class="mdl_close">&times;</span>
-        <p>Issue successful :)</p>`;
+        <p>Issue successful :)</p><button class="add_btn isu_ad_btn" type="button">Download PDF</button>`;
+
     mdl_cont.querySelector('#ad_mdl_close').addEventListener('click', function() {
         isu_mdl.style.display = 'none';
     });
+
+    mdl_cont.querySelector('button').addEventListener('click', function() {
+        create_pdf(pdf_list);
+    });
+
 }
