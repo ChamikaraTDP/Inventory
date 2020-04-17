@@ -7,6 +7,7 @@
         <button onclick="tab_selection(1);">Issue</button>
         <button onclick="tab_selection(2);">View</button>
         <button onclick="tab_selection(3);">Reports</button>
+        <button onclick="tab_selection(4);">New Item</button>
     </div>
 
     <div class="grid_area" id="grid_area"></div>

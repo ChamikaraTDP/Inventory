@@ -24,12 +24,12 @@ class HomeController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function index()
+    public function tests()
     {
         return view('home');
     }
 
-    public function nav_index()
+    public function index()
     {
         $categories = Category::select('id', 'name')->get();
         $items = Item::select('id', 'name', 'type', 'category_id')->get();

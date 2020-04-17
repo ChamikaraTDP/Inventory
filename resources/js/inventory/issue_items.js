@@ -855,7 +855,7 @@ function submit_issue( isu_tbl, isu_date, rcv_stn, rcv_usr, isu_mdl, pdf_list) {
     XHR.addEventListener('error', function(event) {
         console.log('something went wrong' + event.target.responseText);
     });
-    XHR.open('POST', '/issue_items', true);
+    XHR.open('POST', '/inventory/transaction/stock/issue', true);
     XHR.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 
     XHR.send('_token=' + window.getCSRF() + '&' + 'issue=' + JSON.stringify(isu_list));

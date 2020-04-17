@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Traits\Utils;
 use App\InventoryItem;
-use App\Item;
 use App\Transaction;
 use Illuminate\Http\Request;
-use App\Category;
 use Illuminate\Support\Facades\DB;
-use Throwable;
 
 class TransactionController extends Controller
 {
+    use Utils;
+
     /**
      * Create a new controller instance.
      *
@@ -23,25 +23,12 @@ class TransactionController extends Controller
 
 
     /**
-     * Show the application dashboard.
-     *
-     * @return \Illuminate\Contracts\Support\Renderable
-     */
-    public function index() {
-        $categories = Category::select('id', 'name')->get();
-        $items = Item::select('id', 'name', 'category_id')->get();
-
-        return view('add_items', compact('categories', 'items'));
-    }
-
-
-    /**
      * handle add form data
      *
      * @param Request $request add item details
      * @return void
      */
-    public function add_items(Request $request) {
+    public function put(Request $request) {
         $data = json_decode($request->input('data'));
 
         $form_data = $data->form_details;
@@ -67,6 +54,7 @@ class TransactionController extends Controller
         $transaction->save();
 
         $attach_arr = [];
+
         for($i = 0; $i < $bulk_count; $i++){
             $attach_arr[$itm_bulk[$i]->item_id] = array('quantity' => $itm_bulk[$i]->quantity,
                 'unit_price' => $itm_bulk[$i]->unit_price);
@@ -103,99 +91,13 @@ class TransactionController extends Controller
 
 
     /**
-     * handle queries and filtering of data
-     * @param $station
-     * @return array
-     */
-    private function get_bulk_items($station){
-
-        $rcv_items = DB::table('transactions')
-            ->join('transaction_bulk', 'transactions.id', '=', 'transaction_bulk.transaction_id')
-            ->join('items', 'transaction_bulk.item_id', '=', 'items.id')
-            ->select('item_id', DB::raw('sum(quantity) as quantity'), 'name', 'category_id', 'type' )
-            ->where('transactions.receiving_station', $station)
-            ->groupBy('item_id')
-            ->get();
-
-        $isu_items = DB::table('transactions')
-            ->join('transaction_bulk', 'transactions.id', '=', 'transaction_bulk.transaction_id')
-            ->join('items', 'transaction_bulk.item_id', '=', 'items.id')
-            ->select('item_id', DB::raw('sum(quantity) as quantity'), 'name', 'category_id', 'type' )
-            ->where('transactions.issuing_station', $station)
-            ->groupBy('item_id')
-            ->get();
-
-        $avl_items = [];
-
-        foreach ($rcv_items as $rcv_item) {
-            $isu_itm =  $isu_items->firstWhere('item_id', $rcv_item->item_id);
-
-            if($isu_itm) {
-                $rcv_item->quantity = $rcv_item->quantity - $isu_itm->quantity;
-            }
-            if($rcv_item->quantity > 0) {
-                array_push($avl_items, $rcv_item);
-            }
-            else if($rcv_item->quantity < 0) {
-
-                return $rcv_item->item_id;
-                break;
-            }
-        }
-
-        return $avl_items;
-    }
-
-    public function get_inv_items($station){
-
-        $inv_items = DB::table('inventory_items')
-            ->join('items', 'inventory_items.item_id', '=', 'items.id')
-            ->select('item_id', DB::raw('count(item_id) as quantity'), 'name', 'category_id', 'type')
-            ->where('current_station', $station)
-            ->groupBy('item_id')
-            ->get();
-
-        return $inv_items;
-
-    }
-
-
-    /**
-     * response with station & user data
-     */
-    public function load_issue_tab() {
-        $station = auth()->user()->station_id;
-
-        $bulk_items = $this->get_bulk_items($station);
-        $inv_items = $this->get_inv_items($station);
-
-        $avl_items = array_merge($bulk_items, $inv_items->toArray());
-
-        if(is_array($avl_items)) {
-            try {
-                $issue_view = view('issue_tab')->render();
-
-                return response()->json(array("issue_view" => $issue_view, "items" => $avl_items));
-
-            } catch (Throwable $e) {
-
-                return response(' error occurred during view rendering ', 500);
-            }
-        }
-        else {
-            return response(' error occurred when loading the items ', 500);
-        }
-    }
-
-
-    /**
      * handle queries for saving issue request &
      *   send back updated item data
      *
      * @param Request $request issue details
      * @return Response
      */
-    public function issue_items(Request $request) {
+    public function stock_issue(Request $request) {
         $issue = json_decode($request->input('issue'));
 
         $itm_bulk = $issue->items->bulk;
@@ -252,11 +154,7 @@ class TransactionController extends Controller
             $transaction->inventory_items()->attach($itm_ids);
         }
 
-
-        $bulk_items = $this->get_bulk_items($user->station_id);
-        $inv_items = $this->get_inv_items($user->station_id);
-
-        $avl_items = array_merge($bulk_items, $inv_items->toArray());
+        $avl_items = $this->get_items($user->station_id);
 
         if(is_array($avl_items)) {
 
