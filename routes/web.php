@@ -17,20 +17,29 @@ Route::get('/', function () {
 
 Auth::routes();
 
-//test page
-Route::get('/home', 'HomeController@index')->name('home');
+// test page
+Route::get('/tests', 'HomeController@tests')->name('tests');
 
-Route::view('/add_tab', 'add_tab');
+// Front door to the inventory
+Route::get('/inventory', 'HomeController@index')->name('home_index');
 
-Route::get('/issue_tab', 'TransactionController@load_issue_tab');
+// Add tab
+Route::view('/inventory/tab/add', '/tabs/add')->name('tab_add');
 
-Route::get('/inventory', 'HomeController@nav_index')->name('inventory');
+// Issue tab
+Route::get('/inventory/tab/issue', 'TabsController@issue')->name('tab_issue');
 
-//Add item data to db
-Route::post('/add_items', 'TransactionController@add_items')->name('add_items');
+// Add new item view
+Route::get('/inventory/new/item', 'ItemController@index')->name('item_index');
 
-Route::post('/issue_items', 'TransactionController@issue_items')->name('issue_items');
+// Add new item to db
+Route::get('/inventory/new/item/save', 'ItemController@save')->name('item_save');
 
+// Add items to stock
+Route::post('/inventory/transaction/stock/put', 'TransactionController@put')->name('transaction_put');
+
+// Issue items from stock
+Route::post('/inventory/transaction/stock/issue', 'TransactionController@stock_issue')->name('transaction_stock_issue');
 
 // Route that will be executed when no other route matches the incoming request
 Route::fallback(function () {

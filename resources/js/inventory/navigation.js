@@ -32,6 +32,9 @@ function tab_selection(tab_no) {
     case 3:
         alert('reports tab');
         break;
+    case 4:
+        window.location.replace("inventory/new/item");
+        break;
     default:
         alert('invalid tab selection');
     }
@@ -57,7 +60,7 @@ function get_add_tab() {
     XHR.addEventListener('error', function(event) {
         console.log('something went wrong' + event.target.responseText);
     });
-    XHR.open('GET', '/add_tab', true);
+    XHR.open('GET', '/inventory/tab/add', true);
     XHR.setRequestHeader('Content-type', 'text/html; charset=UTF-8');
     XHR.send();
 }
@@ -83,7 +86,7 @@ function get_issue_tab() {
     XHR.addEventListener('error', function(event) {
         console.log('something went wrong' + event.target.responseText);
     });
-    XHR.open('GET', '/issue_tab', true);
+    XHR.open('GET', '/inventory/tab/issue', true);
     XHR.setRequestHeader('Content-type', 'text/html; charset=UTF-8');
     XHR.send();
 }

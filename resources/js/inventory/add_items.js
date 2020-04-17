@@ -289,7 +289,7 @@ function take_on_submit() {
         XHR.addEventListener('error', function(event) {
             console.log('something went wrong' + event.target.responseText);
         });
-        XHR.open('POST', '/add_items', true);
+        XHR.open('POST', '/inventory/transaction/stock/put', true);
         XHR.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
         // eslint-disable-next-line no-undef
         XHR.send('_token=' + getCSRF() + '&' + 'data=' + JSON.stringify(js_obj));
