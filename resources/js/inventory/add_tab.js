@@ -1,4 +1,5 @@
 import { get_parent, make_list } from './helpers/utils';
+import jsPDF from 'jspdf';
 export { init_add_tab };
 
 function init_add_tab() {
@@ -26,34 +27,59 @@ function insert_row(current) {
     if (row_count > 0 && !current){
         throw new Error(' no calling add button passed! ');
     }
-    const row = table.insertRow(-1);
-    const cell1 = row.insertCell(0);
-    const cell2 = row.insertCell(1);
-    const cell3 = row.insertCell(2);
-    const cell4 = row.insertCell(3);
-    const cell5 = row.insertCell(4);
+    const row = table.insertRow(-1),
+        cell1 = row.insertCell(0),
+        cell2 = row.insertCell(1),
+        cell3 = row.insertCell(2),
+        cell4 = row.insertCell(3),
+        cell5 = row.insertCell(4);
 
     cell1.setAttribute('class', 'ad_cat_td');
-    cell1.innerHTML = `<select class='ad_cat_drop' name='category'>${ make_list(window.get_categories()) }</select>`;
-    cell1.firstChild.addEventListener('change', function(){
+    cell1.innerHTML = `
+        <div class="select">
+            <select class='ad_cat_drop' name='category'>${ make_list(window.get_categories()) }</select>
+        </div>`;
+
+    cell1.querySelector("select[name='category']").addEventListener('change', function(){
         make_item_list(this);
     });
-    cell2.innerHTML = `<select class="ad_itm_drop" name='item'></select>`;
+
+    cell2.innerHTML = `
+        <div class="select">
+            <select class="ad_itm_drop" name='item'></select>
+        </div>`;
+
     cell2.setAttribute('class', 'ad_itm_td');
     make_item_list(cell1.querySelector("select[name='category']"));
 
-    cell3.innerHTML = `<input class='ad_fm_inp' type='number' name='quantity' min="1" required>`;
-    cell4.innerHTML = `<input class='ad_fm_inp' type='number' name='unit_price' min='0'>`;
-    cell5.innerHTML = `<button class='add_btn' type='button' name="ad_btn">Add</button>` +
-        `<button class='rm_btn' style='visibility: hidden' type='button' name="rm_btn">Remove</button>`;
+    cell3.innerHTML = `<input class='input_number_medium max_width_medium'
+        type='number' name='quantity' min="1" required>`;
+
+    cell4.innerHTML = `<input class='input_number_medium max_width_medium'
+        type='number' name='unit_price' min='0'>`;
+
+    cell5.innerHTML = `
+        <button class='button is-info' type='button' name="ad_btn">
+            <span class="icon">
+                <i class="fas fa-plus"></i>
+            </span>
+        </button>
+        <button class='button is-danger' style='visibility: hidden' type='button' name="rm_btn">
+           <span class="icon">
+               <i class="fas fa-minus"></i>
+           </span>
+        </button>`;
 
     cell5.querySelector("button[name='ad_btn']").addEventListener('click', function() {
         insert_row(this);
     });
+
     const rm_btn = cell5.querySelector("button[name='rm_btn']");
+
     rm_btn.addEventListener('click', function() {
         delete_row(this);
     });
+
     // configure buttons
     if (row_count > 0) {
         current.style.visibility = 'hidden';
@@ -148,8 +174,7 @@ function insert_row(current) {
 /**
  * initialize add form so that it can be submitted using submit btn
  *
- * @caller get_add_tab() inventory_main.js
- *
+ * @use display_model()
  */
 function take_on_submit() {
     const form = document.getElementById('ad_itm_form');
@@ -158,22 +183,29 @@ function take_on_submit() {
     display_model();
 
     function display_model() {
+        const isu_list = {
+            'items': [],
+            'details': {
+                date: form.querySelector('#ad_fm_date').value,
+                supplier: form.querySelector('#ad_fm_sup').value,
+                isu_note: form.querySelector('#ad_fm_isn').value,
+                description: form.querySelector('#ad_fm_des').value,
+            },
+        };
+
         let ad_mdl_cont =
             `<div id="ad_mdl_cont" class="mdl_cont">
                 <span id="ad_mdl_close" class="mdl_close">&times</span>
                 <div>
-                    <div>Add items to stock</div>
+                    <div style="text-align: center">Add items to stock</div>
                     <div>
-                        <div style="display: inline-block">
-                           <div>Received From: ${ form.querySelector('#ad_fm_sup').value }</div>
-                           <div>Date: ${ form.querySelector('#ad_fm_date').value }</div>
-                        </div>
-                        <div style="display: inline-block">
-                            <div>Issue Note no: ${ form.querySelector('#ad_fm_isn').value }</div>
-                        </div>
+                        <div>Date: ${ isu_list.details.date }</div>                        
+                       <div>Received From: ${ isu_list.details.supplier }</div>                       
+                       <div>Issue Note no: ${ isu_list.details.isu_note }</div>
                     </div>
+                    <br>
                     <div>
-                        <table id="ad_mdl_tbl">
+                        <table id="ad_mdl_tbl" class="mdl_table">
                             <thead>
                                 <tr>
                                     <th>Item Category</th>
@@ -189,34 +221,52 @@ function take_on_submit() {
             md_tbl_rows= ``,
             cat = {},
             itm = {};
+
         for (let i = 0; i < form_len; i++) {
             cat = rows[i].querySelector("select[name='category']");
             itm = rows[i].querySelector("select[name='item']");
 
+            let item = {
+                category: cat.options[cat.selectedIndex].text,
+                name: itm.options[itm.selectedIndex].text,
+                quantity: rows[i].querySelector("input[name='quantity']").value,
+                unit_val: rows[i].querySelector("input[name='quantity']").value,
+            };
+
             md_tbl_rows += `<tr> 
-                                <td>${ cat.options[cat.selectedIndex].text }</td>
-                                <td>${ itm.options[itm.selectedIndex].text }</td>
-                                <td>${ rows[i].querySelector("input[name='quantity']").value }</td>
-                                <td>${ rows[i].querySelector("input[name='unit_price']").value }</td>
+                                <td>${ item.category }</td>
+                                <td>${ item.name }</td>
+                                <td>${ item.quantity }</td>
+                                <td>${ item.unit_val }</td>
                             </tr>`;
+
+            isu_list.items.push(item);
+
         }
 
         ad_mdl_cont += `${ md_tbl_rows }</tbody>
                     </table>
                 </div>
             </div>
+            <br>
             <div class="clearfix">
-                <p>Description: ${ form.querySelector('#ad_fm_des').value }</p>
-                <button id="mdl_conf_btn" type="button" class="add_btn mdl_conf_btn">Confirm</button>
-            </div>            
+                <p>Description: ${ isu_list.details.description }</p>                
+                <button id="mdl_conf_btn" type="button" class="button is-link is-outlined mdl_conf_btn">
+                    Confirm
+                </button>
+            </div>
         </div>`;
 
         ad_model.innerHTML = ad_mdl_cont;
 
-        ad_model.querySelector('#mdl_conf_btn').addEventListener('click', sendData);
+        ad_model.querySelector('#mdl_conf_btn').addEventListener('click', function () {
+            sendData(isu_list);
+        });
+
         ad_model.querySelector('#ad_mdl_close').addEventListener('click', function() {
             ad_model.style.display = 'none';
         });
+
         ad_model.style.display = 'block';
     }
 
@@ -226,7 +276,7 @@ function take_on_submit() {
      *
      * @use reset_form()
      */
-    function sendData() {
+    function sendData(pdf_list) {
         console.log('initialize form data');
         display_loading();
 
@@ -277,7 +327,7 @@ function take_on_submit() {
             if (event.target.status === 200) {
                 console.log(event.target.responseText);
                 reset_form();
-                display_success();
+                display_success(pdf_list);
             } else {
                 console.log(event.target.status + ' ' + event.target.statusText);
                 alert('Something went wrong:(');
@@ -291,8 +341,8 @@ function take_on_submit() {
         });
         XHR.open('POST', '/inventory/transaction/stock/put', true);
         XHR.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-        // eslint-disable-next-line no-undef
-        XHR.send('_token=' + getCSRF() + '&' + 'data=' + JSON.stringify(js_obj));
+
+        XHR.send('_token=' + window.getCSRF() + '&' + 'data=' + JSON.stringify(js_obj));
     }
 
     function display_loading() {
@@ -300,12 +350,20 @@ function take_on_submit() {
         mdl_cont.innerHTML = `<p>processing request please wait...</p>`;
     }
 
-    function display_success() {
+    function display_success(pdf_list) {
         const mdl_cont = ad_model.querySelector('#ad_mdl_cont');
-        mdl_cont.innerHTML = `<span id="ad_mdl_close" class="mdl_close">&times;</span>
-                    <p>Items added successfully:)</p>`;
+
+        mdl_cont.innerHTML = `
+            <span id="ad_mdl_close" class="mdl_close">&times;</span>                
+            <p>Items added successfully!</p>
+            <button type="button">Download PDF</button>`;
+
         mdl_cont.querySelector('#ad_mdl_close').addEventListener('click', function() {
             ad_model.style.display = 'none';
+        });
+
+        mdl_cont.querySelector('button').addEventListener('click', function() {
+            create_pdf(pdf_list);
         });
     }
 
@@ -332,4 +390,84 @@ function take_on_submit() {
             console.log('error occurred while resetting the form' + e);
         }
     }
+}
+
+
+function create_pdf(isu_list) {
+    const pageWidth = 8.3,
+        lineHeight = 1.2,
+        margin = 0.5,
+        fontSize = 12,
+        ptsPerInch = 72,
+        oneLineHeight = (fontSize * lineHeight) / ptsPerInch,
+        doc = new jsPDF({
+            unit: "in",
+            lineHeight: lineHeight,
+        });
+
+    doc.setFontStyle("bold")
+        .setFont("helvetica", "neue")
+        .setFontSize(fontSize)
+        .text(
+            "Add Items To Stock",
+            pageWidth / 2,
+            margin + oneLineHeight,
+            { align: "center" }
+        );
+
+    doc.setFontStyle("normal")
+        .text(`Date: ${ isu_list.details.date }`, margin, margin + 3 * oneLineHeight)
+        .text(`Received From: ${ isu_list.details.supplier }`, margin, margin + 4 * oneLineHeight)
+        .text(`Issue Note No: ${ isu_list.details.isu_note }`, margin, margin + 5 * oneLineHeight);
+
+    doc.autoTable({
+        startY: margin + 6 * oneLineHeight,
+        margin: 0.5,
+        head: [ ['Item Category', 'Item Name', 'Quantity', 'Unit Value(Rs/-)'] ],
+        body: data(isu_list),
+        tableLineColor: 0,
+        tableLineWidth: 0.01,
+        styles: {
+            lineColor: 0,
+            lineWidth: 0.01,
+            font: 'times',
+            fontSize: fontSize,
+            textColor: 10,
+        },
+        headStyles: {
+            fillColor: 210,
+        },
+
+    });
+
+    let finalY = doc.previousAutoTable.finalY;
+    doc.text(`Description: ${ isu_list.details.description }`, margin, finalY + 2 * oneLineHeight);
+    doc.text(`Above items are recorded in the inventory.`, margin, finalY + 4 * oneLineHeight);
+
+    doc.text(`................................`, margin, finalY + 8 * oneLineHeight);
+    doc.text(`${ window.get_user().name }`, margin, finalY + 9 * oneLineHeight);
+    doc.text(`(Stock Officer)`, margin, finalY + 10 * oneLineHeight);
+
+    doc.save('test.pdf');
+
+}
+
+
+function data(list) {
+    let body = [];
+
+    let items = list.items;
+    let rowCount = items.length;
+
+    for (let j = 0; j < rowCount; j++) {
+        body.push([
+            items[j].category,
+            items[j].name,
+            items[j].quantity,
+            items[j].unit_val,
+
+        ]);
+    }
+
+    return body;
 }

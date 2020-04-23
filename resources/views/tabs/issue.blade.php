@@ -1,7 +1,12 @@
-<div class="grid_container issue_grid_container">
-    <div class="issue_grid_middle">
-        <h5>Items in Station</h5>
-        <table>
+<div class="columns is-variable is-2">
+
+    {{--<div class="column is-2">
+        <h6>Filer & search</h6>
+    </div>--}}
+
+    <div style="margin-right: var(--column-margin-right)" class="column is-7 box auto_overflow">
+        <h5 style="padding-left: var(--title-padding-left)" class="title is-5">Items in Station</h5>
+        <table class="table is-fullwidth is-hoverable">
             <thead>
             <tr>
                 <th>Category</th>
@@ -15,22 +20,9 @@
         </table>
     </div>
 
-    <div class="issue_grid_left">
-        <h5>Filer & search</h5>
-        <table>
-            <thead>
-            <tr>
-                <th>Category</th>
-                <th>Item Name</th>
-            </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-    </div>
-
-    <div class="issue_grid_right">
-        <h5>Issuing List</h5>
-        <table id="isu_lst_tbl">
+    <div class="column is-5 box auto_overflow">
+        <h5 style="padding-left: var(--title-padding-left)" class="title is-5">Issuing List</h5>
+        <table id="isu_lst_tbl" class="table is-fullwidth is-hoverable">
             <thead>
                 <tr>
                     <th>Item</th>
@@ -40,13 +32,22 @@
             </thead>
             <tbody id="isu_tbl_bd"></tbody>
         </table>
-        <div id="rcv_stn_dv" style="padding: 10px 10px 2px 10px"></div>
-        <div id="rcv_usr_dv" style="padding: 2px 10px"></div>
-        <div style="padding: 2px 10px">
-            <label for="isu_date">Date:</label><input id="isu_date" type="date" name="isu_date" required/>
+        <div id="rcv_stn_dv" class="padding_all_4 auto_overflow clearfix"></div>
+        <div id="rcv_usr_dv" class="padding_all_4 auto_overflow clearfix"></div>
+        <div class="padding_all_4 auto_overflow clearfix">
+            <label for="isu_date" class="label_float">Date :</label>
+            <input id="isu_date"  class="form_input input_float" type="date" name="isu_date" required/>
         </div>
-        <div style="padding: 2px 10px">
-            <button id="isu_sub_btn" type="button" class="add_btn sub_btn">submit</button>
+        <div class="level is-mobile">
+            <div class="level-left"></div>
+            <div class="level-right">
+                <p class="level-item">
+                    <button id="isu_sub_btn" style="margin: 1rem 1rem 0.5rem 0"
+                            class="button is-link is-outlined" type="button">
+                        submit
+                    </button>
+                </p>
+            </div>
         </div>
     </div>
 </div>

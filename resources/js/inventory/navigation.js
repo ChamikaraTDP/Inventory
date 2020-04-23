@@ -1,23 +1,22 @@
-import { init_add_tab } from './add_items';
-import { init_isu_tab } from './issue_items';
+import { init_add_tab } from './add_tab';
+import { init_isu_tab } from './issue_tab';
 export { tab_selection };
 
 /**
  * configure color of tabs
  * load tab using xhr
  *
- * @param {number} tab_no The index of tab
+ * @param {number} tab_no       The index of tab
  */
 function tab_selection(tab_no) {
-    const nv_tabs = document.querySelectorAll('.nv_box button');
+
+    const nv_tabs = document.querySelectorAll('.tabs li');
 
     nv_tabs.forEach(function(node) {
-        node.style.backgroundColor = '';
-        node.style.color = '';
+        node.classList.toggle('is-active', false);
     });
 
-    nv_tabs[tab_no].style.backgroundColor = '#004FC8';
-    nv_tabs[tab_no].style.color = 'white';
+    nv_tabs[tab_no].classList.toggle('is-active');
 
     switch (tab_no) {
     case 0:

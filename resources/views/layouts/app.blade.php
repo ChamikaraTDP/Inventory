@@ -16,17 +16,19 @@
 
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/my_style.css') }}" rel="stylesheet">
+    {{--<link href="{{ asset('css/my_style.css') }}" rel="stylesheet">--}}
 
 </head>
 <body>
     <div id="app">
-        <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
+        {{--<nav class="navbar">
             <div class="container">
                 <a class="navbar-brand" href="{{ url('/inventory') }}">
                     {{ config('app.name', 'Laravel') }}
                 </a>
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
+                <button class="navbar-toggler" type="button" data-toggle="collapse"
+                        data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
@@ -50,7 +52,8 @@
                             @endif
                         @else
                             <li class="nav-item dropdown">
-                                <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                                <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button"
+                                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
                                     {{ Auth::user()->name }} <span class="caret"></span>
                                 </a>
 
@@ -70,7 +73,55 @@
                     </ul>
                 </div>
             </div>
+        </nav>--}}
+
+
+        <nav class="navbar" role="navigation" aria-label="main navigation">
+            <div class="navbar-brand">
+                <a class="navbar-item" href="{{ url('/inventory') }}">
+                    <p style="font-size: var(--navbar-brand-font-size)">{{ config('app.name', 'Laravel') }}</p>
+                </a>
+                <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
+            <div class="navbar-menu">
+                <div class="navbar-end">
+                    @guest
+                        <div class="navbar-item">
+                            <div class="buttons">
+                                <a class="button is-primary" href="{{ route('login') }}"><strong>{{ __('Login') }}</strong></a>
+                                @if (Route::has('register'))
+                                    <a class="button is-light" href="{{ route('register') }}">{{ __('Register') }}</a>
+                                @endif
+                            </div>
+                        </div>
+                    @else
+                        <div class="navbar-item has-dropdown" onClick="this.classList.toggle('is-active')">
+                            <a class="navbar-link">
+                                {{ Auth::user()->name }}
+                            </a>
+
+                            <div class="navbar-dropdown is-right">
+                                <a class="navbar-item" href="{{ route('logout') }}" onclick="event.preventDefault();
+                                   document.getElementById('logout-form').submit();">
+                                    {{ __('Logout') }}
+                                </a>
+                                <a class="navbar-item">
+                                    Admin
+                                </a>
+                                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                                    @csrf
+                                </form>
+                            </div>
+                        </div>
+                    @endguest
+                </div>
+            </div>
         </nav>
+
 
         <main class="py-4">
             @yield('content')
