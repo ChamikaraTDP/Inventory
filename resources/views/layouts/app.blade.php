@@ -109,12 +109,15 @@
                                    document.getElementById('logout-form').submit();">
                                     {{ __('Logout') }}
                                 </a>
-                                <a class="navbar-item">
-                                    Admin
-                                </a>
                                 <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                                     @csrf
                                 </form>
+                                <a class="navbar-item">
+                                    Admin
+                                </a>
+                                <a class="navbar-item" href="{{ route('item_index') }}">
+                                    New Item
+                                </a>
                             </div>
                         </div>
                     @endguest
