@@ -29,6 +29,18 @@ Route::view('/inventory/tab/add', '/tabs/add')->name('tab_add');
 // Issue tab
 Route::get('/inventory/tab/issue', 'TabsController@issue')->name('tab_issue');
 
+// View tab
+Route::get('/inventory/tab/view', 'TabsController@view')->name('tab_view');
+
+// View / all  tab
+Route::get('/inventory/tab/view/all', 'TransactionController@all')->name('transaction_all');
+
+// View / receipts tab
+Route::get('/inventory/tab/view/receipts', 'TransactionController@receipts')->name('transaction_receipts');
+
+// View / issues tab
+Route::get('/inventory/tab/view/issues', 'TransactionController@issues')->name('transaction_issues');
+
 // Add new item view
 Route::get('/inventory/new/item', 'ItemController@index')->name('item_index');
 

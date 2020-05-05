@@ -166,4 +166,31 @@ class TransactionController extends Controller
         }
     }
 
+
+    public function receipts() {
+        $station = auth()->user()->station_id;
+
+        $trans = DB::select('select * from trans_info where rcv_stn_id = ? order by id desc', [$station]);
+
+        return $trans;
+    }
+
+
+    public function issues() {
+        $station = auth()->user()->station_id;
+
+        $trans = DB::select('select * from trans_info where isu_stn_id = ? order by id desc', [$station]);
+
+        return $trans;
+    }
+
+    public function all() {
+        $station = auth()->user()->station_id;
+
+        $trans = DB::select('select * from trans_info where isu_stn_id = ? or rcv_stn_id = ? order by id desc',
+            [$station, $station]);
+        return $trans;
+    }
+
+
 }
