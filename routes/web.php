@@ -21,7 +21,7 @@ Auth::routes();
 Route::get('/tests', 'HomeController@tests')->name('tests');
 
 // Front door to the inventory
-Route::get('/inventory', 'HomeController@index')->name('home_index');
+Route::get('/inventory', 'HomeController@index')->name('inventory');
 
 // Add tab
 Route::view('/inventory/tab/add', '/tabs/add')->name('tab_add');
@@ -29,11 +29,29 @@ Route::view('/inventory/tab/add', '/tabs/add')->name('tab_add');
 // Issue tab
 Route::get('/inventory/tab/issue', 'TabsController@issue')->name('tab_issue');
 
+// View tab
+Route::get('/inventory/tab/view', 'TabsController@view')->name('tab_view');
+
+// View / all  tab
+Route::get('/inventory/tab/view/all', 'TransactionController@all')->name('transaction_all');
+
+// View / receipts tab
+Route::get('/inventory/tab/view/receipts', 'TransactionController@receipts')->name('transaction_receipts');
+
+// View / issues tab
+Route::get('/inventory/tab/view/issues', 'TransactionController@issues')->name('transaction_issues');
+
+// Retrieve all the items of a transaction
+Route::get('/inventory/transaction/{id}', 'TransactionController@all_items')->name('transaction_all_items');
+
+// Retrieve all the items of a to_stock transaction
+Route::get('/inventory/transaction/stock/{id}', 'TransactionController@to_stock_items')->name('transaction_to_stock_items');
+
 // Add new item view
 Route::get('/inventory/new/item', 'ItemController@index')->name('item_index');
 
 // Add new item to db
-Route::get('/inventory/new/item/save', 'ItemController@save')->name('item_save');
+Route::post('/inventory/new/item/create', 'ItemController@create')->name('item_create');
 
 // Add items to stock
 Route::post('/inventory/transaction/stock/put', 'TransactionController@put')->name('transaction_put');

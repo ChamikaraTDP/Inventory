@@ -1,23 +1,29 @@
-import { init_add_tab } from './add_items';
-import { init_isu_tab } from './issue_items';
+import { init_add_tab } from './add_tab';
+import { init_isu_tab } from './issue_tab';
+import { init_view_tab } from './view_tab';
+import axios from 'axios';
 export { tab_selection };
 
 /**
  * configure color of tabs
  * load tab using xhr
  *
- * @param {number} tab_no The index of tab
+ * @param {number} tab_no       The index of tab
  */
 function tab_selection(tab_no) {
-    const nv_tabs = document.querySelectorAll('.nv_box button');
+
+    if( !Number.isInteger(tab_no) || tab_no > 3 || tab_no < 0) {
+        alert('invalid tab selection');
+        return;
+    }
+
+    const nv_tabs = document.querySelectorAll('.tabs li');
 
     nv_tabs.forEach(function(node) {
-        node.style.backgroundColor = '';
-        node.style.color = '';
+        node.classList.toggle('is-active', false);
     });
 
-    nv_tabs[tab_no].style.backgroundColor = '#004FC8';
-    nv_tabs[tab_no].style.color = 'white';
+    nv_tabs[tab_no].classList.toggle('is-active');
 
     switch (tab_no) {
     case 0:
@@ -27,14 +33,14 @@ function tab_selection(tab_no) {
         get_issue_tab();
         break;
     case 2:
-        alert('view tab');
+        get_view_tab();
         break;
     case 3:
         alert('reports tab');
         break;
-    case 4:
+    /*case 4:
         window.location.replace("inventory/new/item");
-        break;
+        break;*/
     default:
         alert('invalid tab selection');
     }
@@ -89,4 +95,18 @@ function get_issue_tab() {
     XHR.open('GET', '/inventory/tab/issue', true);
     XHR.setRequestHeader('Content-type', 'text/html; charset=UTF-8');
     XHR.send();
+}
+
+
+/**
+ * xhr to get view tab
+ */
+async function get_view_tab() {
+    try {
+        const response = await axios.get('/inventory/tab/view');
+        document.getElementById('grid_area').innerHTML = response.data.view_tab;
+        init_view_tab(response.data.trans);
+    } catch (error) {
+        console.error(error);
+    }
 }

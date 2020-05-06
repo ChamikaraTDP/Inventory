@@ -7,6 +7,7 @@ use App\InventoryItem;
 use App\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use stdClass;
 
 class TransactionController extends Controller
 {
@@ -86,7 +87,7 @@ class TransactionController extends Controller
 
         $transaction->inventory_items()->attach($itm_ids);
 
-        return response( " transaction recorded successfully", 200);
+        return $transaction->id;
     }
 
 
@@ -103,14 +104,13 @@ class TransactionController extends Controller
         $itm_bulk = $issue->items->bulk;
         $itm_inv = $issue->items->inv;
         $details = $issue->details;
-        $user = auth()->user();
 
         $transaction = new Transaction;
         $transaction->issuing_date = $details->isu_date;
         $transaction->received_by = $details->rcv_usr;
         $transaction->receiving_station = $details->rcv_stn;
-        $transaction->issued_by = $user->id;
-        $transaction->issuing_station = $user->station_id;
+        $transaction->issued_by = $details->isu_usr;
+        $transaction->issuing_station = $details->isu_stn;
         $transaction->transaction_type = "stn_to_stn";
         $transaction->save();
 
@@ -135,7 +135,7 @@ class TransactionController extends Controller
                 $db_items = InventoryItem::where(
                     [
                         ['item_id', '=', $itm->item_id],
-                        ['current_station', '=', $user->station_id],
+                        ['current_station', '=', $details->isu_stn],
                     ])
                     ->take($itm_count)
                     ->get();
@@ -154,16 +154,164 @@ class TransactionController extends Controller
             $transaction->inventory_items()->attach($itm_ids);
         }
 
-        $avl_items = $this->get_items($user->station_id);
+        $avl_items = $this->get_items($details->isu_stn);
 
         if(is_array($avl_items)) {
 
             return response()->json(array("items" => $avl_items,
-                "msg" => "transaction created for issue and items attached successfully"));
+                "msg" => "transaction created for issue and items attached successfully", "t_id" => $transaction->id));
         }
         else {
             return response('item ' . $avl_items . ' has a negative quantity!', 500);
         }
+    }
+
+    /**
+     * retrieve all receipts(transactions) of a particular station
+     *
+     * @return array
+     */
+    public function receipts() {
+        $station = auth()->user()->station_id;
+
+        $trans = DB::select('select * from trans_info where rcv_stn_id = ? order by id desc', [$station]);
+
+        return $trans;
+    }
+
+
+    /**
+     * retrieve all issues(transactions) of a particular station
+     *
+     * @return array
+     */
+    public function issues() {
+        $station = auth()->user()->station_id;
+
+        $trans = DB::select('select * from trans_info where isu_stn_id = ? order by id desc', [$station]);
+
+        return $trans;
+    }
+
+
+    /**
+     * retrieve all transactions of a particular station
+     *
+     * @return array
+     */
+    public function all() {
+        $station = auth()->user()->station_id;
+
+        $trans = DB::select('select * from trans_info where isu_stn_id = ? or rcv_stn_id = ? order by id desc',
+            [$station, $station]);
+
+        return $trans;
+    }
+
+
+    /**
+     * Retrieve all items of a transaction
+     * use to handle stn_to_stn transactions
+     * return object will contain bulk and inv items separately (with codes and serials)
+     *
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function all_items($id) {
+        $items = new stdClass();
+
+        /** @noinspection SqlDialectInspection */
+        $items->bulk = DB::select('select I.name, B.quantity 
+                            from (transaction_bulk as B 
+                                 join items as I on B.item_id = I.id)
+                            where B.transaction_id = ?',
+                            [ $id ]);
+
+        /** @noinspection SqlDialectInspection */
+        $itm_info = DB::select('select I.item_id, C.name, I.item_code, I.serial_no 
+                            from (transaction_inventory as T 
+                                join inventory_items as I on T.inventory_item_id = I.id
+                                join items as C on I.item_id = C.id)
+                            where T.transaction_id = ?  order by item_id',
+                            [ $id ]);
+
+        //$items->inv = $itm_info;
+
+        $items->inv = [];
+
+        if(count($itm_info) > 0) {
+
+            $item = new stdClass();
+            $item->name = $itm_info[0]->name;
+            $item->codes = [];
+
+            $item_id = $itm_info[0]->item_id;
+            $qun = 0;
+
+            foreach ($itm_info as $record) {
+
+                if ($record->item_id == $item_id) {
+                    $itm_code = new stdClass();
+                    $itm_code->code = $record->item_code;
+                    $itm_code->serial = $record->serial_no;
+
+                    $qun++;
+
+                    array_push($item->codes, $itm_code);
+
+                }
+                else {
+                    $item->quantity = $qun;
+                    array_push($items->inv, $item);
+
+                    $qun = 1;
+
+                    $item = new stdClass();
+                    $item->name = $record->name;
+                    $item->codes = [];
+
+                    $itm_code = new stdClass();
+                    $itm_code->code = $record->item_code;
+                    $itm_code->serial = $record->serial_no;
+
+                    array_push($item->codes, $itm_code);
+
+                    $item_id = $record->item_id;
+                }
+            }
+
+            $item->quantity = $qun;
+            array_push($items->inv, $item);
+        }
+
+        return response()->json($items);
+    }
+
+
+    public function to_stock_items($id) {
+        $items_b = DB::select(" select I.name, T.quantity, C.name as category, T.unit_price as unit_val
+            from (transaction_bulk as T 
+                join items as I on T.item_id = I.id
+                join categories as C on I.category_id = C.id)
+            where T.transaction_id = ?",
+            [ $id ] );
+
+        $items_i = DB::select("select * from
+            (select R.item_id, I.name, count(*) as quantity, C.name as category
+                from (transaction_inventory as T 
+                    join inventory_items as R on T.inventory_item_id = R.id
+                    join items as I on R.item_id = I.id join categories as C on I.category_id = C.id)
+                where T.transaction_id = ? group by R.item_id) as A 
+            natural join  
+            (select distinct R.item_id, R.price as unit_val
+                from (transaction_inventory as T
+                    join inventory_items as R on T.inventory_item_id = R.id)
+                where T.transaction_id = ?) as B",
+            [ $id, $id ] );
+
+        $arr = [];
+
+        return array_merge($items_b, $items_i);
     }
 
 }
