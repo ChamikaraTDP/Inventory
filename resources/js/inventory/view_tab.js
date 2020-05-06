@@ -1,11 +1,14 @@
 import Vue from 'vue';
+import { display_model as isu_model, create_pdf as isu_pdf } from './issue_tab';
+import { display_model as rcv_model, create_pdf as rcv_pdf } from './add_tab';
+
 export { init_view_tab };
 
 
 function init_view_tab(data) {
-
     let view_app = new Vue({
         el: '#app_view',
+
         data: {
             'trans': data,
         },
@@ -122,6 +125,23 @@ Vue.component('transaction', {
         },
     },
 
+    methods: {
+        get_itm_info() {
+            const transac = this.record;
+
+            if(transac.type === 'to_stock') {
+                handle_stock_receipt(transac);
+            }
+            else if(this.isIssue) {
+                handle_station_issue(transac);
+            }
+            else {
+                handle_station_receipt(transac);
+            }
+        }
+
+    },
+
     template: `
         <article class="media">
             <div class="media-left" v-if="isIssue">
@@ -172,7 +192,7 @@ Vue.component('transaction', {
                 </div>
             </div>
             <div class="media-right">
-                <button class="button is-medium">
+                <button class="button is-medium" v-on:click="get_itm_info">
                     <span class="icon">
                         <i class="fas fa-eye"></i>
                     </span>
@@ -180,3 +200,83 @@ Vue.component('transaction', {
             </div>
         </article>`,
 });
+
+
+function handle_station_issue(transac) {
+    fetch(`/inventory/transaction/${ transac.id }`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(items => {
+            //console.log(items);
+            const isu_list = {
+                'items': items,
+
+                'model_details': {
+                    'heading': `Issue Note`,
+                    'top_left': [
+                        `Issued Station: ${ transac.isu_stn }`,
+                        `Received Station: ${ transac.rcv_stn }`,
+                        `Received Officer: ${ transac.rcv_usr }`
+                    ],
+                    'bottom_note': `Issued on ${ transac.isu_date } and the issue duly entered.`,
+                    'sign_note': `(Issuing Officer)`,
+                    'sign_usr_name': transac.isu_usr,
+                    'btn_text': `Download PDF`,
+                    'tran_det': `Transaction ID: ${ transac.id }`,
+                },
+            };
+
+            const isu_mdl = document.getElementById('isu_mdl');
+
+            isu_model(isu_mdl, isu_list, function(i_mdl, i_list) {
+                isu_pdf(i_list);
+            });
+        })
+        .catch(error => {
+            console.error('There has been a problem with your fetch operation:', error);
+        });
+}
+
+function handle_stock_receipt(transac) {
+    fetch(`/inventory/transaction/stock/${ transac.id }`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(items => {
+            //console.log(items);
+            const isu_list = {
+                'items': items,
+
+                'model_details': {
+                    'heading': `Stock Note`,
+                    'top_left': [
+                        `Date: ${ transac.isu_date }`,
+                        `Received from: ${ transac.sup }`,
+                        `Issue Note no: ${ transac.rcp_no }`,
+                    ],
+                    'bottom_note': `Above items are recorded in the inventory.`,
+                    'description': `Description: ${ transac.des }`,
+                    'sign_note': `(Stock Officer)`,
+                    'sign_usr_name' : transac.rcv_usr,
+                    'btn_text' : `Download PDF`,
+                    'tran_det': `Transaction ID: ${ transac.id }`,
+                },
+            };
+
+            const isu_mdl = document.getElementById('isu_mdl');
+
+            rcv_model(isu_mdl, isu_list, function(i_mdl, i_list) {
+                rcv_pdf(i_list);
+            });
+        })
+        .catch(error => {
+            console.error('There has been a problem with your fetch operation:', error);
+        });
+}

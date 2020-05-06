@@ -1,6 +1,7 @@
 import { get_parent, make_list } from './helpers/utils';
 import jsPDF from 'jspdf';
-export { init_add_tab };
+export { init_add_tab, display_model, create_pdf };
+
 
 function init_add_tab() {
     insert_row();
@@ -10,6 +11,7 @@ function init_add_tab() {
         take_on_submit();
     });
 }
+
 
 /**
  * insert add form rows
@@ -180,215 +182,252 @@ function take_on_submit() {
     const form = document.getElementById('ad_itm_form');
     const ad_model = document.getElementById('ad_mdl');
 
-    display_model();
+    const isu_list = process_data(form);
 
-    function display_model() {
-        const isu_list = {
-            'items': [],
-            'details': {
-                date: form.querySelector('#ad_fm_date').value,
-                supplier: form.querySelector('#ad_fm_sup').value,
-                isu_note: form.querySelector('#ad_fm_isn').value,
-                description: form.querySelector('#ad_fm_des').value,
-            },
-        };
+    display_model(ad_model, isu_list, sendData);
+}
 
-        let ad_mdl_cont =
-            `<div id="ad_mdl_cont" class="mdl_cont">
-                <span id="ad_mdl_close" class="mdl_close">&times</span>
-                <div>
-                    <div style="text-align: center">Add items to stock</div>
-                    <div>
-                        <div>Date: ${ isu_list.details.date }</div>                        
-                       <div>Received From: ${ isu_list.details.supplier }</div>                       
-                       <div>Issue Note no: ${ isu_list.details.isu_note }</div>
-                    </div>
-                    <br>
-                    <div>
-                        <table id="ad_mdl_tbl" class="mdl_table">
-                            <thead>
-                                <tr>
-                                    <th>Item Category</th>
-                                    <th>Item Name</th>
-                                    <th>Quantity</th>
-                                    <th>Unit Value(Rs/-)</th>
-                                </tr>
-                            </thead>
-                            <tbody id="ad_mt_bd">`;
 
-        let rows = form.querySelector('#tbl_body').rows,
-            form_len = rows.length,
-            md_tbl_rows= ``,
-            cat = {},
-            itm = {};
+function process_data(form) {
+    const isu_list = {
+        'items': [],
 
-        for (let i = 0; i < form_len; i++) {
-            cat = rows[i].querySelector("select[name='category']");
-            itm = rows[i].querySelector("select[name='item']");
-
-            let item = {
-                category: cat.options[cat.selectedIndex].text,
-                name: itm.options[itm.selectedIndex].text,
-                quantity: rows[i].querySelector("input[name='quantity']").value,
-                unit_val: rows[i].querySelector("input[name='quantity']").value,
-            };
-
-            md_tbl_rows += `<tr> 
-                                <td>${ item.category }</td>
-                                <td>${ item.name }</td>
-                                <td>${ item.quantity }</td>
-                                <td>${ item.unit_val }</td>
-                            </tr>`;
-
-            isu_list.items.push(item);
-
+        'model_details': {
+            'heading': `Stock Note`,
+            'top_left': [
+                `Date: ${ form.querySelector('#ad_fm_date').value }`,
+                `Received from: ${ form.querySelector('#ad_fm_sup').value }`,
+                `Issue Note no: ${ form.querySelector('#ad_fm_isn').value }`
+            ],
+            'bottom_note': `Above items are recorded in the inventory.`,
+            'description': `Description: ${ form.querySelector('#ad_fm_des').value }`,
+            'sign_note': `(Stock Officer)`,
+            'sign_usr_name' : window.get_user().name,
+            'btn_text' : `Confirm`,
         }
 
-        ad_mdl_cont += `${ md_tbl_rows }</tbody>
+    };
+
+    let rows = form.querySelector('#tbl_body').rows,
+        form_len = rows.length,
+        cat = {},
+        itm = {};
+
+    for (let i = 0; i < form_len; i++) {
+        cat = rows[i].querySelector("select[name='category']");
+        itm = rows[i].querySelector("select[name='item']");
+
+        let item = {
+            category: cat.options[cat.selectedIndex].text,
+            name: itm.options[itm.selectedIndex].text,
+            quantity: rows[i].querySelector("input[name='quantity']").value,
+            unit_val: rows[i].querySelector("input[name='unit_price']").value,
+        };
+
+        isu_list.items.push(item);
+    }
+
+    return isu_list;
+
+}
+
+
+function display_model(ad_model, isu_list, btn_func) {
+    let ad_mdl_cont =
+        `<div id="ad_mdl_cont" class="mdl_cont">
+            <span id="ad_mdl_close" class="mdl_close">&times</span>
+            <div>
+                <div style="text-align: center">${ isu_list.model_details.heading }</div>
+                <div>`;
+
+    const details = isu_list.model_details.top_left,
+        det_count = details.length;
+
+    for(let j = 0; j < det_count; j++) {
+        ad_mdl_cont += `<div>${ details[j] }</div>`;
+    }
+
+    ad_mdl_cont += `
+        </div>
+        <br>
+        <div>
+            <table id="ad_mdl_tbl" class="mdl_table">
+                <thead>
+                    <tr>
+                        <th>Item Category</th>
+                        <th>Item Name</th>
+                        <th>Quantity</th>
+                        <th>Unit Value(Rs/-)</th>
+                    </tr>
+                </thead>
+                <tbody id="ad_mt_bd">`;
+
+    let md_tbl_rows = ``,
+        items = isu_list.items,
+        itm_count = items.length;
+
+    for (let i = 0; i < itm_count; i++) {
+        md_tbl_rows += `
+            <tr> 
+                <td>${ items[i].category }</td>
+                <td>${ items[i].name }</td>
+                <td>${ items[i].quantity }</td>
+                <td>${ items[i].unit_val }</td>
+            </tr>`;
+    }
+
+    ad_mdl_cont += `${ md_tbl_rows }</tbody>
                     </table>
                 </div>
             </div>
             <br>
             <div class="clearfix">
-                <p>Description: ${ isu_list.details.description }</p>                
+                <p>${ isu_list.model_details.description }</p>  
                 <button id="mdl_conf_btn" type="button" class="button is-link is-outlined mdl_conf_btn">
-                    Confirm
+                    ${ isu_list.model_details.btn_text }
                 </button>
             </div>
         </div>`;
 
-        ad_model.innerHTML = ad_mdl_cont;
+    ad_model.innerHTML = ad_mdl_cont;
 
-        ad_model.querySelector('#mdl_conf_btn').addEventListener('click', function () {
-            sendData(isu_list);
-        });
+    ad_model.querySelector('#mdl_conf_btn').addEventListener('click', function () {
+        btn_func(ad_model, isu_list);
+    });
 
-        ad_model.querySelector('#ad_mdl_close').addEventListener('click', function() {
-            ad_model.style.display = 'none';
-        });
+    ad_model.querySelector('#ad_mdl_close').addEventListener('click', function() {
+        ad_model.style.display = 'none';
+    });
 
-        ad_model.style.display = 'block';
+    ad_model.style.display = 'block';
+}
+
+
+/**
+ * xhr to send data to controller
+ * send add form data as json string
+ *
+ * @use reset_form()
+ */
+function sendData(ad_model, pdf_list) {
+    console.log('initialize form data');
+
+    const form = document.getElementById('ad_itm_form');
+
+    display_loading(ad_model);
+
+    const XHR = new XMLHttpRequest();
+    const js_obj = {};
+    const FD = new FormData(form);
+
+    js_obj.form_details = {
+        "date": FD.get('date'),
+        "supplier": FD.get('supplier'),
+        "issue_no": FD.get('issue_no'),
+        "description": FD.get('description'),
+    };
+
+    js_obj.item_details = {
+        'bulk' : [],
+        'inv' : []
+    };
+
+    let form_len = FD.getAll('item').length,
+        itm = {};
+    for (let i = 0; i < form_len; i++) {
+        itm = FD.getAll('item')[i];
+        itm = JSON.parse(itm);
+        if(itm.type) { // === 1 true -> inventory
+            js_obj.item_details.inv.push(
+                {
+                    "item_id": itm.id,
+                    "quantity": FD.getAll('quantity')[i],
+                    "unit_price": (FD.getAll('unit_price')[i] === '' ? 0 : FD.getAll('unit_price')[i]),
+                }
+            );
+        }
+        else {
+            js_obj.item_details.bulk.push(
+                {
+                    "item_id": itm.id,
+                    "quantity": FD.getAll('quantity')[i],
+                    "unit_price": (FD.getAll('unit_price')[i] === '' ? 0 : FD.getAll('unit_price')[i]),
+                }
+            );
+        }
     }
 
-    /**
-     * xhr to send data to controller
-     * send add form data as json string
-     *
-     * @use reset_form()
-     */
-    function sendData(pdf_list) {
-        console.log('initialize form data');
-        display_loading();
+    XHR.addEventListener('load', function(event) {
+        console.log('response loaded');
 
-        const XHR = new XMLHttpRequest();
-        const js_obj = {};
-        const FD = new FormData(form);
+        if (event.target.status === 200) {
+            console.log('items added successfully');
+            reset_form(form);
+            pdf_list.model_details.tran_det = `Transaction ID: ${ event.target.responseText }`;
+            display_success(ad_model, pdf_list);
+        } else {
+            console.log(event.target.status + ' ' + event.target.statusText);
+            alert('Something went wrong:(');
+        }
+    });
+    XHR.addEventListener('abort', function(event) {
+        console.log('request aborted' + event.target.responseText);
+    });
+    XHR.addEventListener('error', function(event) {
+        console.log('something went wrong' + event.target.responseText);
+    });
+    XHR.open('POST', '/inventory/transaction/stock/put', true);
+    XHR.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 
-        js_obj.form_details = {
-            "date": FD.get('date'),
-            "supplier": FD.get('supplier'),
-            "issue_no": FD.get('issue_no'),
-            "description": FD.get('description'),
-        };
+    XHR.send('_token=' + window.getCSRF() + '&' + 'data=' + JSON.stringify(js_obj));
+}
 
-        js_obj.item_details = {
-            'bulk' : [],
-            'inv' : []
-        };
 
-        let form_len = FD.getAll('item').length,
-            itm = {};
-        for (let i = 0; i < form_len; i++) {
-            itm = FD.getAll('item')[i];
-            itm = JSON.parse(itm);
-            if(itm.type) { // === 1 true -> inventory
-                js_obj.item_details.inv.push(
-                    {
-                        "item_id": itm.id,
-                        "quantity": FD.getAll('quantity')[i],
-                        "unit_price": (FD.getAll('unit_price')[i] === '' ? 0 : FD.getAll('unit_price')[i]),
-                    }
-                );
-            }
-            else {
-                js_obj.item_details.bulk.push(
-                    {
-                        "item_id": itm.id,
-                        "quantity": FD.getAll('quantity')[i],
-                        "unit_price": (FD.getAll('unit_price')[i] === '' ? 0 : FD.getAll('unit_price')[i]),
-                    }
-                );
-            }
+function display_loading(ad_model) {
+    const mdl_cont = ad_model.querySelector('#ad_mdl_cont');
+    mdl_cont.innerHTML = `<p>processing request please wait...</p>`;
+}
+
+
+function display_success(ad_model, pdf_list) {
+    const mdl_cont = ad_model.querySelector('#ad_mdl_cont');
+
+    mdl_cont.innerHTML = `
+        <span id="ad_mdl_close" class="mdl_close">&times;</span>                
+        <p>Items added successfully!</p>
+        <button type="button">Download PDF</button>`;
+
+    mdl_cont.querySelector('#ad_mdl_close').addEventListener('click', function() {
+        ad_model.style.display = 'none';
+    });
+
+    mdl_cont.querySelector('button').addEventListener('click', function() {
+        create_pdf(pdf_list);
+    });
+}
+
+
+/**
+ * reset add form after submission
+ *
+ * @use insert_row
+ */
+function reset_form(form){
+    try {
+        const rows_to_remove = document.getElementById('tbl_body').childNodes;
+        const n_rows = rows_to_remove.length;
+
+        let i = n_rows - 1;
+        for (i; i >= 0; i--) {
+            rows_to_remove[i].remove();
         }
 
-        XHR.addEventListener('load', function(event) {
-            console.log('response loaded');
+        form.reset();
+        insert_row();
+        console.log('form resets successfully');
 
-            if (event.target.status === 200) {
-                console.log(event.target.responseText);
-                reset_form();
-                display_success(pdf_list);
-            } else {
-                console.log(event.target.status + ' ' + event.target.statusText);
-                alert('Something went wrong:(');
-            }
-        });
-        XHR.addEventListener('abort', function(event) {
-            console.log('request aborted' + event.target.responseText);
-        });
-        XHR.addEventListener('error', function(event) {
-            console.log('something went wrong' + event.target.responseText);
-        });
-        XHR.open('POST', '/inventory/transaction/stock/put', true);
-        XHR.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-
-        XHR.send('_token=' + window.getCSRF() + '&' + 'data=' + JSON.stringify(js_obj));
-    }
-
-    function display_loading() {
-        const mdl_cont = ad_model.querySelector('#ad_mdl_cont');
-        mdl_cont.innerHTML = `<p>processing request please wait...</p>`;
-    }
-
-    function display_success(pdf_list) {
-        const mdl_cont = ad_model.querySelector('#ad_mdl_cont');
-
-        mdl_cont.innerHTML = `
-            <span id="ad_mdl_close" class="mdl_close">&times;</span>                
-            <p>Items added successfully!</p>
-            <button type="button">Download PDF</button>`;
-
-        mdl_cont.querySelector('#ad_mdl_close').addEventListener('click', function() {
-            ad_model.style.display = 'none';
-        });
-
-        mdl_cont.querySelector('button').addEventListener('click', function() {
-            create_pdf(pdf_list);
-        });
-    }
-
-    /**
-     * reset add form after submission
-     *
-     * @use insert_row
-     */
-    function reset_form(){
-        try {
-            const rows_to_remove = document.getElementById('tbl_body').childNodes;
-            const n_rows = rows_to_remove.length;
-
-            let i = n_rows - 1;
-            for (i; i >= 0; i--) {
-                rows_to_remove[i].remove();
-            }
-
-            form.reset();
-            insert_row();
-            console.log('form resets successfully');
-
-        } catch (e) {
-            console.log('error occurred while resetting the form' + e);
-        }
+    } catch (e) {
+        console.log('error occurred while resetting the form' + e);
     }
 }
 
@@ -409,16 +448,18 @@ function create_pdf(isu_list) {
         .setFont("helvetica", "neue")
         .setFontSize(fontSize)
         .text(
-            "Add Items To Stock",
+            `${ isu_list.model_details.heading }`,
             pageWidth / 2,
             margin + oneLineHeight,
             { align: "center" }
         );
 
     doc.setFontStyle("normal")
-        .text(`Date: ${ isu_list.details.date }`, margin, margin + 3 * oneLineHeight)
-        .text(`Received From: ${ isu_list.details.supplier }`, margin, margin + 4 * oneLineHeight)
-        .text(`Issue Note No: ${ isu_list.details.isu_note }`, margin, margin + 5 * oneLineHeight);
+        .text(`${ isu_list.model_details.top_left[0] }`, margin, margin + 3 * oneLineHeight)
+        .text(`${ isu_list.model_details.tran_det }`, pageWidth - margin, margin + 3 * oneLineHeight,
+            { align: 'right'})
+        .text(`${ isu_list.model_details.top_left[1] }`, margin, margin + 4 * oneLineHeight)
+        .text(`${ isu_list.model_details.top_left[2] }`, margin, margin + 5 * oneLineHeight);
 
     doc.autoTable({
         startY: margin + 6 * oneLineHeight,
@@ -441,12 +482,12 @@ function create_pdf(isu_list) {
     });
 
     let finalY = doc.previousAutoTable.finalY;
-    doc.text(`Description: ${ isu_list.details.description }`, margin, finalY + 2 * oneLineHeight);
-    doc.text(`Above items are recorded in the inventory.`, margin, finalY + 4 * oneLineHeight);
+    doc.text(`${ isu_list.model_details.description }`, margin, finalY + 2 * oneLineHeight);
+    doc.text(`${ isu_list.model_details.bottom_note }`, margin, finalY + 4 * oneLineHeight);
 
-    doc.text(`................................`, margin, finalY + 8 * oneLineHeight);
-    doc.text(`${ window.get_user().name }`, margin, finalY + 9 * oneLineHeight);
-    doc.text(`(Stock Officer)`, margin, finalY + 10 * oneLineHeight);
+    doc.text(`.......................................`, margin, finalY + 8 * oneLineHeight);
+    doc.text(`${ isu_list.model_details.sign_usr_name }`, margin, finalY + 9 * oneLineHeight);
+    doc.text(`${ isu_list.model_details.sign_note }`, margin, finalY + 10 * oneLineHeight);
 
     doc.save('test.pdf');
 

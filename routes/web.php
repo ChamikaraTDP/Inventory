@@ -41,6 +41,12 @@ Route::get('/inventory/tab/view/receipts', 'TransactionController@receipts')->na
 // View / issues tab
 Route::get('/inventory/tab/view/issues', 'TransactionController@issues')->name('transaction_issues');
 
+// Retrieve all the items of a transaction
+Route::get('/inventory/transaction/{id}', 'TransactionController@all_items')->name('transaction_all_items');
+
+// Retrieve all the items of a to_stock transaction
+Route::get('/inventory/transaction/stock/{id}', 'TransactionController@to_stock_items')->name('transaction_to_stock_items');
+
 // Add new item view
 Route::get('/inventory/new/item', 'ItemController@index')->name('item_index');
 

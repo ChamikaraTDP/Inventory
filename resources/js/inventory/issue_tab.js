@@ -1,7 +1,8 @@
 import { make_list, get_parent, tog_row_disp } from './helpers/utils';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-export { init_isu_tab };
+import { cloneDeep } from 'lodash';
+export { init_isu_tab, display_model, create_pdf };
 
 
 /**
@@ -16,7 +17,7 @@ export { init_isu_tab };
 function init_isu_tab(avl_itms) {
     set_item_table(avl_itms); // set middle item list
     set_isu_list(); // issue list setup
-    document.getElementById('isu_sub_btn').addEventListener('click', display_model);
+    document.getElementById('isu_sub_btn').addEventListener('click', handle_submit);
 }
 
 
@@ -409,7 +410,6 @@ function itm_fm_isu(node, ad_btn) {
 }
 
 
-
 /**
  * add **inventory** items to the issuing list
  *
@@ -552,9 +552,6 @@ function inv_to_isu(ad_btn, prn_row) {
 }
 
 
-
-
-
 function rm_function(rm_btn, prn_row, cell) {
     const cur_div = get_parent(rm_btn, 'DIV');
     const isu_node = prn_row.querySelector("input[name='isu_qt']");
@@ -626,8 +623,6 @@ function remove_row(row, prn_row) {
 }
 
 
-
-
 /**
  * add all item details to the list
  *
@@ -643,158 +638,244 @@ function add_all_itms(row, prn_row) {
     }
 }
 
-
-
-
-function display_model() {
+/**
+ *  organize the data from the list
+ *
+ * @returns {{
+ *  details: {
+ *     rcv_stn: string,
+ *     rcv_usr: string,
+ *     isu_date: string,
+ *     isu_stn: number,
+ *     isu_usr: number,
+ *  },
+ *  model_details: {
+ *      heading: string,
+ *      sign_usr_name: string,
+ *      bottom_note: string,
+ *      top_left: string[],
+ *      sign_note: string,
+ *  },
+ *  items: {
+ *      inv: [],
+ *      bulk: [],
+ *  }
+ * }}
+ */
+function process_data() {
     const isu_tbl = document.getElementById('isu_lst_tbl'),
         rcv_stn = document.getElementById('rcv_stn'),
         rcv_usr = document.getElementById('rcv_usr'),
         isu_date = document.getElementById('isu_date'),
-        isu_mdl = document.getElementById('isu_mdl'),
         rows = isu_tbl.rows,
         row_len = rows.length;
 
     if (row_len < 2) {
         alert('No items selected!');
+        throw Error('issuing table does not contain any items!');
     }
     else if (isu_date.value === '') {
         alert('Please fill the required fields!');
+        throw Error('required fields are not filled');
     }
-    else {
-        const isu_list = {
-            'items': {
-                'bulk': [],
-                'inv': [],
-            },
 
-            'details': {
-                rcv_stn: rcv_stn.options[rcv_stn.selectedIndex].text,
-                rcv_usr: rcv_usr.options[rcv_usr.selectedIndex].text,
-                isu_date: isu_date.value,
-                isu_stn: window.get_user_station().name,
-                isu_usr: window.get_user().name,
-            },
-        };
+    const isu_list = {
+        'items': {
+            'bulk': [],
+            'inv': [],
+        },
+
+        'details': {},
+
+        'model_details': {
+            'heading': `Issue Note`,
+            'top_left': [
+                `Issued Station: ${ window.get_user_station().name }`,
+                `Received Station: ${ rcv_stn.options[rcv_stn.selectedIndex].text }`,
+                `Received Officer: ${ rcv_usr.options[rcv_usr.selectedIndex].text }`
+            ],
+            'bottom_note': `Issued on ${ isu_date.value } and the issue duly entered.`,
+            'sign_note': `(Issuing Officer)`,
+            'sign_usr_name' : window.get_user().name,
+            'btn_text' : `Confirm`,
+        }
+    };
+
+    for (let m = 1; m < row_len; m++) {
+
+        if( rows[m].getAttribute('data-item-type') ===  '1') {
+
+            let inv_itm = {
+                'name': rows[m].querySelector("td[data-cell='name']").innerText,
+                'item_id': rows[m].querySelector(
+                    "td[data-cell='name']").getAttribute('data-item-id'),
+                'quantity': rows[m].querySelector("td[data-cell='quantity']").innerText,
+                'codes': [],
+            };
+
+            m++;
+
+            let code_divs = rows[m].querySelectorAll("div[data-row='info']");
+            let div_count = code_divs.length;
+
+            for(let j = 0; j < div_count; j++) {
+                inv_itm.codes.push(
+                    {
+                        'code': code_divs[j].querySelector("span[data-cell='code']").innerText,
+                        'serial': code_divs[j].querySelector("span[data-cell='serial']").innerText,
+                    }
+                );
+            }
+
+            isu_list.items.inv.push(inv_itm);
+        }
+        else {
+            isu_list.items.bulk.push(
+                {
+                    'name': rows[m].querySelector("td[data-cell='name']").innerText,
+                    'item_id': rows[m].querySelector(
+                        "td[data-cell='name']").getAttribute('data-item-id'),
+                    'quantity': rows[m].querySelector("td[data-cell='quantity']").innerText,
+                }
+            );
+        }
+    }
+
+    isu_list.details = {
+        rcv_stn: rcv_stn.value,
+        rcv_usr: rcv_usr.value,
+        isu_date: isu_date.value,
+        isu_stn: window.get_user_station().id,
+        isu_usr: window.get_user().id,
+    };
+
+    console.log(isu_list);
+
+    return isu_list;
+}
 
 
-        let isu_mdl_cont =
-            `<div id="isu_mdl_cont" class="mdl_cont">
-                <span id="isu_mdl_close" class="mdl_close">&times</span>
-                <div>
-                    <div style="text-align:center; font-size:1.1rem">Issue Note</div>
-                    <div>Issued Station: ${ isu_list.details.isu_stn }</div>
-                    <div>Received Station: ${ isu_list.details.rcv_stn }</div>
-                    <div>Issued to: ${ isu_list.details.rcv_usr }</div>
-                    <br>
-                    <div>
-                        <table id="isu_mdl_tbl" class="mdl_table">
-                            <thead>
-                                <tr>
-                                    <th>Description of Stores</th>
-                                    <th>Quantity</th>
-                                </tr>
-                            </thead>
-                            <tbody id="isu_mt_bd">`;
+function handle_submit() {
+    const isu_mdl = document.getElementById('isu_mdl');
+    let isu_list = {};
 
-        let md_tbl_rows = ``;
-        for (let i = 1; i < row_len; i++) {
+    try {
+        isu_list = process_data();
+    }
+    catch (err) {
+        console.log('error occurred while processing data ' + err);
+        return;
+    }
 
-            if( rows[i].getAttribute('data-item-type') ===  '1') {
-                let inv_itm = {
-                    'name': rows[i].querySelector("td[data-cell='name']").innerText,
-                    'quantity': rows[i].querySelector("td[data-cell='quantity']").innerText,
-                    'codes': [],
-                };
+    display_model(isu_mdl, isu_list, submit_issue);
+}
 
-                md_tbl_rows += `
-                    <tr> 
-                       <td>${ inv_itm.name }</td>
-                       <td>${ inv_itm.quantity }</td>                                
-                    </tr>
-                    <tr>
-                        <td colspan="2">`;
 
-                i++;
+function display_model(isu_mdl, isu_list, button_func) {
+    const inv_len = isu_list.items.inv.length,
+        bulk_len =  isu_list.items.bulk.length;
 
-                let code_divs = rows[i].querySelectorAll("div[data-row='info']");
-                let div_count = code_divs.length;
+    let isu_mdl_cont =
+        `<div id="isu_mdl_cont" class="mdl_cont">
+            <span id="isu_mdl_close" class="mdl_close">&times</span>
+            <div>
+                <div style="text-align:center; font-size:1.1rem">${ isu_list.model_details.heading }</div>`;
 
-                md_tbl_rows += `
+    let top_det = isu_list.model_details.top_left,
+        top_len = top_det.length;
+
+    for(let k = 0; k < top_len; k++ ) {
+        isu_mdl_cont += `
+            <div>
+                ${ top_det[k] }           
+            </div>`;
+    }
+
+    isu_mdl_cont += `
+        <br>
+            <div>
+                <table id="isu_mdl_tbl" class="mdl_table">
+                    <thead>
+                        <tr>
+                            <th>Description of Stores</th>
+                            <th>Quantity</th>
+                        </tr>
+                    </thead>
+                    <tbody id="isu_mt_bd">`;
+
+    let md_tbl_rows = ``,
+        quan = 0,
+        items = isu_list.items.inv;
+
+    for(let n = 0; n < inv_len; n++) {
+        quan = items[n].quantity;
+        md_tbl_rows += `
+            <tr> 
+               <td>${ items[n].name }</td>
+               <td>${ quan }</td>                                
+            </tr>
+            <tr>
+                <td colspan="2">
                     <div>
                       <span class="width_40">Item Code</span>
                       <span class="width_40">Serial Number</span>
                     </div>`;
 
-                for(let m = 0; m < div_count; m++) {
-                    inv_itm.codes.push({
-                        'code': code_divs[m].querySelector("span[data-cell='code']").innerText,
-                        'serial': code_divs[m].querySelector("span[data-cell='serial']").innerText,
-                    });
-
-                    md_tbl_rows += `
-                        <div>
-                            <span class="width_40">
-                                ${ inv_itm.codes[m].code }
-                            </span>
-                            <span class="width_40">
-                                ${ inv_itm.codes[m].serial }
-                            </span>
-                        </div>`;
-                }
-
-                md_tbl_rows += `</td></tr>`;
-
-                isu_list.items.inv.push(inv_itm);
-
-            }
-            else {
-
-                let bulk = {
-                    'name': rows[i].querySelector("td[data-cell='name']").innerText,
-                    'quantity': rows[i].querySelector("td[data-cell='quantity']").innerText,
-                };
-
-                md_tbl_rows += `
-                    <tr> 
-                       <td>${ bulk.name }</td>
-                       <td>${ bulk.quantity }</td>                                
-                    </tr>`;
-
-                isu_list.items.bulk.push(bulk);
-
-            }
+        for(let m = 0; m < quan; m++) {
+            md_tbl_rows += `
+                <div>
+                    <span class="width_40">
+                        ${ items[n].codes[m].code }
+                    </span>
+                    <span class="width_40">
+                        ${ items[n].codes[m].serial }
+                    </span>
+                </div>`;
         }
 
-        isu_mdl_cont += `        ${ md_tbl_rows }
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <br>
-                <div class="clearfix">
-                    <p>Issued on ${ isu_date.value } and the issue duly entered.</p>
-                    <br>
-                    <div>................................</div>
-                    <div>${ isu_list.details.isu_usr }</div>
-                    <div>(Issuing Officer)</div>
-                    <button id="isu_conf_btn" type="button" class="button is-outlined mdl_conf_btn">Confirm</button>
-                </div>
-            </div>`;
-
-        isu_mdl.innerHTML = isu_mdl_cont;
-
-        isu_mdl.querySelector('#isu_conf_btn').addEventListener('click', function(){
-            submit_issue(isu_tbl, isu_date, rcv_stn, rcv_usr, isu_mdl, isu_list);
-            // create_pdf(isu_list);
-        });
-
-        isu_mdl.querySelector('#isu_mdl_close').addEventListener('click', function() {
-            isu_mdl.style.display = 'none';
-        });
-
-        isu_mdl.style.display = 'block';
+        md_tbl_rows += `</td></tr>`;
     }
+
+    items = isu_list.items.bulk;
+
+    for(let j = 0; j < bulk_len; j++) {
+        md_tbl_rows += `
+            <tr> 
+               <td>${ items[j].name }</td>
+               <td>${ items[j].quantity }</td>                                
+            </tr>`;
+    }
+
+    isu_mdl_cont += `        ${ md_tbl_rows }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <br>
+            <div class="clearfix">
+                <p>${ isu_list.model_details.bottom_note }</p>
+                <br>
+                <div>................................</div>
+                <div>${ isu_list.model_details.sign_usr_name }</div>
+                <div>${ isu_list.model_details.sign_note }</div>
+                <button id="isu_conf_btn" type="button" class="button is-link is-outlined mdl_conf_btn">
+                    ${ isu_list.model_details.btn_text }
+                </button>
+            </div>
+        </div>`;
+
+    isu_mdl.innerHTML = isu_mdl_cont;
+
+    isu_mdl.querySelector('#isu_conf_btn').addEventListener('click', function(){
+        button_func(isu_mdl, isu_list);
+    });
+
+    isu_mdl.querySelector('#isu_mdl_close').addEventListener('click', function() {
+        isu_mdl.style.display = 'none';
+    });
+
+    isu_mdl.style.display = 'block';
+
 }
 
 
@@ -817,16 +898,18 @@ function create_pdf(isu_list) {
         .setFont("helvetica", "neue")
         .setFontSize(fontSize)
         .text(
-            "Issue Note",
+            `${ isu_list.model_details.heading }`,
             pageWidth / 2,
             margin + oneLineHeight,
             { align: "center" }
         );
 
     doc.setFontStyle("normal")
-        .text(`Issued Station: ${ window.get_user_station().name }`, margin, margin + 3 * oneLineHeight)
-        .text(`Received Station: ${ isu_list.details.rcv_stn }`, margin, margin + 4 * oneLineHeight)
-        .text(`Received Officer: ${ isu_list.details.rcv_usr }`, margin, margin + 5 * oneLineHeight);
+        .text(`${isu_list.model_details.top_left[0] }`, margin, margin + 3 * oneLineHeight)
+        .text(`${ isu_list.model_details.tran_det }`, maxLineWidth + margin, margin + 3 * oneLineHeight,
+            { align: 'right'})
+        .text(`${isu_list.model_details.top_left[1] }`, margin, margin + 4 * oneLineHeight)
+        .text(`${isu_list.model_details.top_left[2] }`, margin, margin + 5 * oneLineHeight);
 
     doc.autoTable({
         startY: margin + 6 * oneLineHeight,
@@ -877,23 +960,19 @@ function create_pdf(isu_list) {
                         data.cell.y + (i + 2) * oneLineHeight
                     );
                 }
-
             }
-
         },
-
     });
 
     let finalY = doc.previousAutoTable.finalY;
-    doc.text(`Issue made on ${ isu_list.details.isu_date } and issue is duly entered.`,
+    doc.text(`${ isu_list.model_details.bottom_note }`,
         margin, finalY + 2 * oneLineHeight);
 
-    doc.text(`................................`, margin, finalY + 6 * oneLineHeight);
-    doc.text(`${ window.get_user().name }`, margin, finalY + 7 * oneLineHeight);
-    doc.text(`(Issuing Officer)`, margin, finalY + 8 * oneLineHeight);
+    doc.text(`.....................................`, margin, finalY + 6 * oneLineHeight);
+    doc.text(`${ isu_list.model_details.sign_usr_name }`, margin, finalY + 7 * oneLineHeight);
+    doc.text(`${ isu_list.model_details.sign_note }`, margin, finalY + 8 * oneLineHeight);
 
     doc.save('test.pdf');
-
 }
 
 
@@ -938,78 +1017,32 @@ function data(list, line_height) {
 /**
  * submit issue & reset form with updated data
  */
-function submit_issue( isu_tbl, isu_date, rcv_stn, rcv_usr, isu_mdl, pdf_list) {
-
+function submit_issue(isu_mdl, isu_list ) {
     display_loading(isu_mdl);
 
-    const isu_list = {
-        'items': {
-            'bulk': [],
-            'inv': [],
-        },
+    const pdf_list = cloneDeep(isu_list);
+    delete isu_list.model_details;
 
-        'details': {},
-    };
-
-    const rows = isu_tbl.rows,
-        row_len = rows.length;
-
-    for (let m = 1; m < row_len; m++) {
-
-        if( rows[m].getAttribute('data-item-type') ===  '1') {
-
-            let inv_itm = {
-                'item_id': rows[m].querySelector(
-                    "td[data-cell='name']").getAttribute('data-item-id'),
-                'quantity': rows[m].querySelector("td[data-cell='quantity']").innerText,
-                'codes': [],
-            };
-
-            m++;
-
-            let code_divs = rows[m].querySelectorAll("div[data-row='info']");
-            let div_count = code_divs.length;
-
-            for(let j = 0; j < div_count; j++) {
-                inv_itm.codes.push(
-                    {
-                        'code': code_divs[j].querySelector("span[data-cell='code']").innerText,
-                        'serial': code_divs[j].querySelector("span[data-cell='serial']").innerText,
-                    }
-                );
-            }
-
-            isu_list.items.inv.push(inv_itm);
-        }
-        else {
-            isu_list.items.bulk.push(
-                {
-                    'item_id': rows[m].querySelector(
-                        "td[data-cell='name']").getAttribute('data-item-id'),
-                    'quantity': rows[m].querySelector("td[data-cell='quantity']").innerText,
-                }
-            );
-        }
-    }
-
-    isu_list.details = {
-        'rcv_stn': rcv_stn.value,
-        'rcv_usr': rcv_usr.value,
-        'isu_date': isu_date.value,
-    };
-
+    const rows = document.getElementById('isu_lst_tbl').rows;
     console.log('data sending');
 
     const XHR = new XMLHttpRequest();
 
     XHR.addEventListener('load', function(event) {
-        console.log('issue response loaded');
+        if(event.target.status === 200) {
+            console.log('issue response loaded');
 
-        const res_obj = JSON.parse(event.target.response);
-        console.log(res_obj.msg);
+            const res_obj = JSON.parse(event.target.response);
+            console.log(res_obj.msg);
 
-        reset_form(res_obj.items, rows);
-        display_success(isu_mdl, pdf_list);
+            reset_form(res_obj.items, rows);
+            pdf_list.model_details.tran_det = `Transaction ID: ${ res_obj.t_id }`;
+            display_success(isu_mdl, pdf_list);
+        }
+        else {
+            console.log('Error occurred while submitting the data!');
+            throw Error('submission not successful!');
+        }
     });
     XHR.addEventListener('abort', function(event) {
         console.log('request aborted' + event.target.responseText);

@@ -21,6 +21,9 @@
     </div>
 </div>
 
+<div id="isu_mdl" class="model">
+</div>
+
 {{--<div>
     <article class="media">
         <div class="media-left">
