@@ -3,17 +3,30 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Traits\Utils;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
 class TabsController extends Controller
 {
     use Utils;
+
+    /**
+     * Create a new controller instance.
+     *
+     * @return void
+     */
+    public function __construct() {
+        $this->middleware('auth');
+    }
+
     /**
      * response with station & user data
+     * @param Request $request
+     * @return \Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function issue() {
-        $station = auth()->user()->station_id;
+    public function issue(Request $request) {
+        $station = $request->stn;
 
         $avl_items = $this->get_items($station);
 
@@ -33,9 +46,8 @@ class TabsController extends Controller
         }
     }
 
-    public function view() {
-
-        $station = auth()->user()->station_id;
+    public function view(Request $request) {
+        $station = $request->stn;
 
         $trans = DB::select('select * from trans_info where isu_stn_id = ? or rcv_stn_id = ? order by id desc',
             [$station, $station]);

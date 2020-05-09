@@ -1,6 +1,8 @@
 import Vue from 'vue';
 import { display_model as isu_model, create_pdf as isu_pdf } from './issue_tab';
 import { display_model as rcv_model, create_pdf as rcv_pdf } from './add_tab';
+import { debounce } from 'lodash';
+import axios from 'axios';
 
 export { init_view_tab };
 
@@ -11,10 +13,16 @@ function init_view_tab(data) {
 
         data: {
             'trans': data,
+            'u_stn': (window.get_user_station() ).id,
         },
     });
 
     init_tran_tabs(view_app);
+
+    document.getElementById('search_box').addEventListener('input', function(event) {
+        debounced_search(event.target.value, view_app);
+    });
+
 }
 
 
@@ -46,24 +54,18 @@ function toggle_selection(tabs, selected) {
 
 
 function fetch_all(view_app) {
-    fetch('/inventory/tab/view/all')
+    axios.get(`/inventory/tab/view/all?stn=${ view_app.u_stn }`)
         .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(trans => {
-            view_app.trans = trans;
+            view_app.trans = response.data;
         })
         .catch(error => {
-            console.error('There has been a problem with your fetch operation:', error);
+            console.error('There has been a problem with your request:', error.toJSON());
         });
 }
 
 
 function fetch_receipts(view_app) {
-    fetch('/inventory/tab/view/receipts')
+    fetch(`/inventory/tab/view/receipts?stn=${ view_app.u_stn }`)
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
@@ -80,7 +82,7 @@ function fetch_receipts(view_app) {
 
 
 function fetch_issues(view_app) {
-    fetch('/inventory/tab/view/issues')
+    fetch(`/inventory/tab/view/issues?stn=${ view_app.u_stn }`)
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
@@ -97,20 +99,14 @@ function fetch_issues(view_app) {
 
 
 Vue.component('transactions', {
-    data() {
-        return {
-            'u_stn': ( window.get_user_station() ).id,
-        };
-    },
-
-    props: ['trans'],
+    props: ['trans', 'u_stn'],
 
     template: `
         <div>
             <transaction v-for="tran in trans"
-                v-bind:record="tran"
-                v-bind:u_stn="u_stn"
-                v-bind:key="tran.id"
+                :record="tran"
+                :u_stn="u_stn"
+                :key="tran.id"
             ></transaction>
         </div>`,
 });
@@ -275,6 +271,28 @@ function handle_stock_receipt(transac) {
             rcv_model(isu_mdl, isu_list, function(i_mdl, i_list) {
                 rcv_pdf(i_list);
             });
+        })
+        .catch(error => {
+            console.error('There has been a problem with your fetch operation:', error);
+        });
+}
+
+function handle_station_receipt() {
+    console.log('stn_isu');
+}
+
+const debounced_search = debounce(search_trans, 600);
+
+function search_trans(phase, view_app) {
+    fetch(`/inventory/transaction/search?phase=${ phase }&stn=${ view_app.u_stn }`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(trans => {
+            view_app.trans = trans;
         })
         .catch(error => {
             console.error('There has been a problem with your fetch operation:', error);

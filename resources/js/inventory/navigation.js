@@ -33,7 +33,10 @@ function tab_selection(tab_no) {
         get_issue_tab();
         break;
     case 2:
-        get_view_tab();
+        get_view_tab().then(response => {
+            document.getElementById('grid_area').innerHTML = response.data.view_tab;
+            init_view_tab(response.data.trans);
+        });
         break;
     case 3:
         alert('reports tab');
@@ -66,7 +69,7 @@ function get_add_tab() {
     XHR.addEventListener('error', function(event) {
         console.log('something went wrong' + event.target.responseText);
     });
-    XHR.open('GET', '/inventory/tab/add', true);
+    XHR.open('GET', `/inventory/tab/add`, true);
     XHR.setRequestHeader('Content-type', 'text/html; charset=UTF-8');
     XHR.send();
 }
@@ -92,7 +95,7 @@ function get_issue_tab() {
     XHR.addEventListener('error', function(event) {
         console.log('something went wrong' + event.target.responseText);
     });
-    XHR.open('GET', '/inventory/tab/issue', true);
+    XHR.open('GET', `/inventory/tab/issue?stn=${ window.get_user_station().id }`, true);
     XHR.setRequestHeader('Content-type', 'text/html; charset=UTF-8');
     XHR.send();
 }
@@ -103,10 +106,8 @@ function get_issue_tab() {
  */
 async function get_view_tab() {
     try {
-        const response = await axios.get('/inventory/tab/view');
-        document.getElementById('grid_area').innerHTML = response.data.view_tab;
-        init_view_tab(response.data.trans);
+        return await axios.get(`/inventory/tab/view?stn=${ window.get_user_station().id }`);
     } catch (error) {
-        console.error(error);
+        return error;
     }
 }
