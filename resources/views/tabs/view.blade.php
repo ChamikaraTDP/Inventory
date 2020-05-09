@@ -2,7 +2,7 @@
     <div class="column is-8 box">
         <div class="field">
             <p class="control has-icons-left">
-                <input class="input" type="text" placeholder="Search">
+                <input id="search_box" class="input" type="text" placeholder="Search">
                 <span class="icon is-left">
                     <i class="fas fa-search" aria-hidden="true"></i>
                 </span>
@@ -16,7 +16,7 @@
             </ul>
         </div>
         <div id="app_view">
-            <transactions v-bind:trans="trans"></transactions>
+            <transactions :trans="trans" :u_stn="u_stn"></transactions>
         </div>
     </div>
 </div>

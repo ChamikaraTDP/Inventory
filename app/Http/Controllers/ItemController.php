@@ -8,6 +8,17 @@ use Illuminate\Http\Request;
 
 class ItemController extends Controller
 {
+
+    /**
+     * Create a new controller instance.
+     *
+     * @return void
+     */
+    public function __construct() {
+        $this->middleware('auth');
+    }
+
+
     public function index(){
         $categories = Category::select('id', 'name')->get();
 

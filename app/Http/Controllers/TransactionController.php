@@ -169,12 +169,13 @@ class TransactionController extends Controller
     /**
      * retrieve all receipts(transactions) of a particular station
      *
+     * @param Request $request
      * @return array
      */
-    public function receipts() {
-        $station = auth()->user()->station_id;
+    public function receipts(Request $request) {
+        //$station = auth()->user()->station_id;
 
-        $trans = DB::select('select * from trans_info where rcv_stn_id = ? order by id desc', [$station]);
+        $trans = DB::select('select * from trans_info where rcv_stn_id = ? order by id desc', [$request->stn]);
 
         return $trans;
     }
@@ -185,10 +186,10 @@ class TransactionController extends Controller
      *
      * @return array
      */
-    public function issues() {
-        $station = auth()->user()->station_id;
+    public function issues(Request $request) {
+        //$station = auth()->user()->station_id;
 
-        $trans = DB::select('select * from trans_info where isu_stn_id = ? order by id desc', [$station]);
+        $trans = DB::select('select * from trans_info where isu_stn_id = ? order by id desc', [$request->stn]);
 
         return $trans;
     }
@@ -199,13 +200,12 @@ class TransactionController extends Controller
      *
      * @return array
      */
-    public function all() {
-        $station = auth()->user()->station_id;
+    public function all(Request $request) {
 
         $trans = DB::select('select * from trans_info where isu_stn_id = ? or rcv_stn_id = ? order by id desc',
-            [$station, $station]);
+            [$request->stn, $request->stn]);
 
-        return $trans;
+        return response($trans);
     }
 
 
@@ -288,6 +288,12 @@ class TransactionController extends Controller
     }
 
 
+    /**
+     * Retrieve all items of a to_stock transaction
+     *
+     * @param $id
+     * @return array
+     */
     public function to_stock_items($id) {
         $items_b = DB::select(" select I.name, T.quantity, C.name as category, T.unit_price as unit_val
             from (transaction_bulk as T 
@@ -309,9 +315,31 @@ class TransactionController extends Controller
                 where T.transaction_id = ?) as B",
             [ $id, $id ] );
 
-        $arr = [];
-
         return array_merge($items_b, $items_i);
+    }
+
+
+    public function search(Request $request){
+        if($request->phase == '') {
+            return redirect()->action('TransactionController@all', ['stn' => $request->stn]);
+        }
+        else {
+            $transactions = DB::table('trans_info')
+                ->where(function ($query) use ($request) {
+                    $query->where('id', 'like', '%'.$request->phase.'%')
+                        ->orWhere('isu_stn', 'like', '%'.$request->phase.'%')
+                        ->orWhere('rcv_stn', 'like', '%'.$request->phase.'%')
+                        ->orWhere('sup', 'like', '%'.$request->phase.'%')
+                        ->orWhere('isu_date', 'like', '%'.$request->phase.'%');
+                })
+                ->where(function ($query) use ($request) {
+                    $query->where('isu_stn_id', $request->stn)
+                        ->orWhere('rcv_stn_id', $request->stn);
+                })
+                ->get();
+
+            return $transactions;
+        }
     }
 
 }
