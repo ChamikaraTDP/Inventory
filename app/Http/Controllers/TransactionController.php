@@ -166,6 +166,7 @@ class TransactionController extends Controller
         }
     }
 
+
     /**
      * retrieve all receipts(transactions) of a particular station
      *
@@ -237,52 +238,7 @@ class TransactionController extends Controller
 
         //$items->inv = $itm_info;
 
-        $items->inv = [];
-
-        if(count($itm_info) > 0) {
-
-            $item = new stdClass();
-            $item->name = $itm_info[0]->name;
-            $item->codes = [];
-
-            $item_id = $itm_info[0]->item_id;
-            $qun = 0;
-
-            foreach ($itm_info as $record) {
-
-                if ($record->item_id == $item_id) {
-                    $itm_code = new stdClass();
-                    $itm_code->code = $record->item_code;
-                    $itm_code->serial = $record->serial_no;
-
-                    $qun++;
-
-                    array_push($item->codes, $itm_code);
-
-                }
-                else {
-                    $item->quantity = $qun;
-                    array_push($items->inv, $item);
-
-                    $qun = 1;
-
-                    $item = new stdClass();
-                    $item->name = $record->name;
-                    $item->codes = [];
-
-                    $itm_code = new stdClass();
-                    $itm_code->code = $record->item_code;
-                    $itm_code->serial = $record->serial_no;
-
-                    array_push($item->codes, $itm_code);
-
-                    $item_id = $record->item_id;
-                }
-            }
-
-            $item->quantity = $qun;
-            array_push($items->inv, $item);
-        }
+        $items->inv = $this->process_inv_info($itm_info);
 
         return response()->json($items);
     }
@@ -295,7 +251,7 @@ class TransactionController extends Controller
      * @return array
      */
     public function to_stock_items($id) {
-        $items_b = DB::select(" select I.name, T.quantity, C.name as category, T.unit_price as unit_val
+        $items_b = DB::select("select I.name, T.quantity, C.name as category, T.unit_price as unit_val
             from (transaction_bulk as T 
                 join items as I on T.item_id = I.id
                 join categories as C on I.category_id = C.id)
@@ -306,9 +262,10 @@ class TransactionController extends Controller
             (select R.item_id, I.name, count(*) as quantity, C.name as category
                 from (transaction_inventory as T 
                     join inventory_items as R on T.inventory_item_id = R.id
-                    join items as I on R.item_id = I.id join categories as C on I.category_id = C.id)
+                    join items as I on R.item_id = I.id
+                    join categories as C on I.category_id = C.id)
                 where T.transaction_id = ? group by R.item_id) as A 
-            natural join  
+            natural join
             (select distinct R.item_id, R.price as unit_val
                 from (transaction_inventory as T
                     join inventory_items as R on T.inventory_item_id = R.id)
@@ -319,6 +276,12 @@ class TransactionController extends Controller
     }
 
 
+    /**
+     * Search for transactions
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Support\Collection
+     */
     public function search(Request $request){
         if($request->phase == '') {
             return redirect()->action('TransactionController@all', ['stn' => $request->stn]);

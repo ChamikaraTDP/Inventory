@@ -213,16 +213,23 @@ function handle_station_issue(transac) {
 
                 'model_details': {
                     'heading': `Issue Note`,
-                    'top_left': [
-                        `Issued Station: ${ transac.isu_stn }`,
-                        `Received Station: ${ transac.rcv_stn }`,
-                        `Received Officer: ${ transac.rcv_usr }`
-                    ],
-                    'bottom_note': `Issued on ${ transac.isu_date } and the issue duly entered.`,
-                    'sign_note': `(Issuing Officer)`,
-                    'sign_usr_name': transac.isu_usr,
+                    'top_left': {
+                        'Issued Station' : transac.isu_stn,
+                        'Received Station' : transac.rcv_stn,
+                        'Received Officer' : transac.rcv_usr,
+                    },
+                    'top_right': {
+                        'tran_det': `Transaction ID : ${ transac.id }`,
+                    },
+                    'bottom_left': {
+                        'Issue note': `Issued on ${ transac.isu_date } and the issue duly entered.`,
+                    },
+                    'sign_det': {
+                        'dots': '.............................................',
+                        'sign_usr_name': transac.isu_usr,
+                        'sign_note': `(Issuing Officer)`,
+                    },
                     'btn_text': `Download PDF`,
-                    'tran_det': `Transaction ID: ${ transac.id }`,
                 },
             };
 
@@ -236,6 +243,7 @@ function handle_station_issue(transac) {
             console.error('There has been a problem with your fetch operation:', error);
         });
 }
+
 
 function handle_stock_receipt(transac) {
     fetch(`/inventory/transaction/stock/${ transac.id }`)
@@ -253,16 +261,16 @@ function handle_stock_receipt(transac) {
                 'model_details': {
                     'heading': `Stock Note`,
                     'top_left': [
-                        `Date: ${ transac.isu_date }`,
-                        `Received from: ${ transac.sup }`,
-                        `Issue Note no: ${ transac.rcp_no }`,
+                        `Date : ${ transac.isu_date }`,
+                        `Received from : ${ transac.sup }`,
+                        `Issue Note no : ${ transac.rcp_no }`,
                     ],
                     'bottom_note': `Above items are recorded in the inventory.`,
                     'description': `Description: ${ transac.des }`,
                     'sign_note': `(Stock Officer)`,
                     'sign_usr_name' : transac.rcv_usr,
                     'btn_text' : `Download PDF`,
-                    'tran_det': `Transaction ID: ${ transac.id }`,
+                    'tran_det': `Transaction ID : ${ transac.id }`,
                 },
             };
 
