@@ -32,6 +32,9 @@ Route::get('/inventory/tab/issue', 'TabsController@issue')->name('tab_issue');
 // View tab
 Route::get('/inventory/tab/view', 'TabsController@view')->name('tab_view');
 
+// Reports tab
+Route::get('/inventory/tab/reports', 'TabsController@reports')->name('tab_reports');
+
 // View / all  tab
 Route::get('/inventory/tab/view/all', 'TransactionController@all')->name('transaction_all');
 
@@ -61,6 +64,9 @@ Route::post('/inventory/transaction/stock/put', 'TransactionController@put')->na
 
 // Issue items from stock
 Route::post('/inventory/transaction/stock/issue', 'TransactionController@stock_issue')->name('transaction_stock_issue');
+
+// Generate reports
+Route::post('/inventory/report', 'ReportsController@generate')->name('reports_generate');
 
 // Route that will be executed when no other route matches the incoming request
 Route::fallback(function () {

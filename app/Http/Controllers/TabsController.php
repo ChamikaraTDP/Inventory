@@ -11,6 +11,7 @@ class TabsController extends Controller
 {
     use Utils;
 
+
     /**
      * Create a new controller instance.
      *
@@ -20,8 +21,11 @@ class TabsController extends Controller
         $this->middleware('auth');
     }
 
+
     /**
+     * render the issue tab
      * response with station & user data
+     *
      * @param Request $request
      * @return \Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
@@ -46,6 +50,13 @@ class TabsController extends Controller
         }
     }
 
+
+    /**
+     * render the  view tab
+     *
+     * @param Request $request
+     * @return \Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\JsonResponse|\Illuminate\Http\Response
+     */
     public function view(Request $request) {
         $station = $request->stn;
 
@@ -63,6 +74,16 @@ class TabsController extends Controller
 
         }
 
+    }
+
+
+    /**
+     * render the reports tab
+     *
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function reports() {
+        return view('tabs/reports');
     }
 
 

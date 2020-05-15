@@ -641,26 +641,7 @@ function add_all_itms(row, prn_row) {
 /**
  *  organize the data from the list
  *
- * @returns {{
- *  details: {
- *     rcv_stn: string,
- *     rcv_usr: string,
- *     isu_date: string,
- *     isu_stn: number,
- *     isu_usr: number,
- *  },
- *  model_details: {
- *      heading: string,
- *      sign_usr_name: string,
- *      bottom_note: string,
- *      top_left: string[],
- *      sign_note: string,
- *  },
- *  items: {
- *      inv: [],
- *      bulk: [],
- *  }
- * }}
+ * @returns {Object}
  */
 function process_data() {
     const isu_tbl = document.getElementById('isu_lst_tbl'),
@@ -689,14 +670,20 @@ function process_data() {
 
         'model_details': {
             'heading': `Issue Note`,
-            'top_left': [
-                `Issued Station: ${ window.get_user_station().name }`,
-                `Received Station: ${ rcv_stn.options[rcv_stn.selectedIndex].text }`,
-                `Received Officer: ${ rcv_usr.options[rcv_usr.selectedIndex].text }`
-            ],
-            'bottom_note': `Issued on ${ isu_date.value } and the issue duly entered.`,
-            'sign_note': `(Issuing Officer)`,
-            'sign_usr_name' : window.get_user().name,
+            'top_left': {
+                'Issued Station':  window.get_user_station().name,
+                'Received Station': rcv_stn.options[rcv_stn.selectedIndex].text,
+                'Received Officer': rcv_usr.options[rcv_usr.selectedIndex].text,
+            },
+            'top_right': {},
+            'bottom_left': {
+                'Issued on': `Issued on ${ isu_date.value } and the issue duly entered.`,
+            },
+            'sign_det': {
+                'dots': '.............................................',
+                'sign_usr_name' : window.get_user().name,
+                'sign_note': `(Issuing Officer)`,
+            },
             'btn_text' : `Confirm`,
         }
     };
@@ -768,27 +755,31 @@ function handle_submit() {
     }
 
     display_model(isu_mdl, isu_list, submit_issue);
+    //create_pdf(isu_list);
 }
 
 
 function display_model(isu_mdl, isu_list, button_func) {
     const inv_len = isu_list.items.inv.length,
-        bulk_len =  isu_list.items.bulk.length;
+        bulk_len =  isu_list.items.bulk.length,
+        model_details = isu_list.model_details;
 
     let isu_mdl_cont =
         `<div id="isu_mdl_cont" class="mdl_cont">
             <span id="isu_mdl_close" class="mdl_close">&times</span>
             <div>
-                <div style="text-align:center; font-size:1.1rem">${ isu_list.model_details.heading }</div>`;
+                <div style="text-align:center; font-size:1.1rem">
+                    <strong>${ model_details.heading }</strong>
+                </div>`;
 
-    let top_det = isu_list.model_details.top_left,
-        top_len = top_det.length;
+    if( model_details.top_right.tran_det ) {
+        isu_mdl_cont += `<div>${ model_details.top_right.tran_det }</div>`;
+    }
 
-    for(let k = 0; k < top_len; k++ ) {
-        isu_mdl_cont += `
-            <div>
-                ${ top_det[k] }           
-            </div>`;
+    let top_left = model_details.top_left;
+
+    for(let key in top_left) {
+        isu_mdl_cont += `<div><span>${key}</span> : <span>${top_left[key]}</span></div>`;
     }
 
     isu_mdl_cont += `
@@ -852,14 +843,23 @@ function display_model(isu_mdl, isu_list, button_func) {
                 </div>
             </div>
             <br>
-            <div class="clearfix">
-                <p>${ isu_list.model_details.bottom_note }</p>
-                <br>
-                <div>................................</div>
-                <div>${ isu_list.model_details.sign_usr_name }</div>
-                <div>${ isu_list.model_details.sign_note }</div>
-                <button id="isu_conf_btn" type="button" class="button is-link is-outlined mdl_conf_btn">
-                    ${ isu_list.model_details.btn_text }
+            <div class="clearfix">`;
+
+    let bot_lef = model_details.bottom_left;
+
+    for(let key in bot_lef) {
+        isu_mdl_cont +=`<div>${ bot_lef[key] }</div>`;
+    }
+
+    isu_mdl_cont  +=  `<br>`;
+
+    let  sign_det = model_details.sign_det;
+    for(let key in sign_det) {
+        isu_mdl_cont += `<div>${sign_det[key]}</div>`;
+    }
+
+    isu_mdl_cont += `<button id="isu_conf_btn" type="button" class="button is-link is-outlined mdl_conf_btn">
+                    ${ model_details.btn_text }
                 </button>
             </div>
         </div>`;
@@ -878,41 +878,72 @@ function display_model(isu_mdl, isu_list, button_func) {
 
 }
 
-
+/**
+ * Generate pdf documents
+ *
+ * @param isu_list
+ */
 function create_pdf(isu_list) {
-    const pageWidth = 8.3,
+    const pageWidth = 8.3, // inches
         lineHeight = 1.2,
         margin = 0.5,
         maxLineWidth = pageWidth - margin * 2,
-        fontSize = 12,
+        fontSize = 12, // points
         ptsPerInch = 72,
-        oneLineHeight = (fontSize * lineHeight) / ptsPerInch,
+        oneLineHeight = (fontSize * lineHeight) / ptsPerInch, // lineHeight times fontSize(in inches)
         inv_itms = isu_list.items.inv,
         inv_len = inv_itms.length,
+        model_det = isu_list.model_details,
         doc = new jsPDF({
             unit: "in",
             lineHeight: lineHeight,
         });
 
+    // font styles for heading
     doc.setFontStyle("bold")
         .setFont("helvetica", "neue")
-        .setFontSize(fontSize)
-        .text(
-            `${ isu_list.model_details.heading }`,
-            pageWidth / 2,
-            margin + oneLineHeight,
-            { align: "center" }
-        );
+        .setFontSize(fontSize);
 
-    doc.setFontStyle("normal")
-        .text(`${isu_list.model_details.top_left[0] }`, margin, margin + 3 * oneLineHeight)
-        .text(`${ isu_list.model_details.tran_det }`, maxLineWidth + margin, margin + 3 * oneLineHeight,
-            { align: 'right'})
-        .text(`${isu_list.model_details.top_left[1] }`, margin, margin + 4 * oneLineHeight)
-        .text(`${isu_list.model_details.top_left[2] }`, margin, margin + 5 * oneLineHeight);
+    // y coordinate of lines
+    let  ymi = 1;
 
+    // heading
+    doc.text(
+        `${ model_det.heading }`,
+        pageWidth / 2,
+        margin + ymi * oneLineHeight,
+        { align: "center" }
+    );
+
+    // font styles for content
+    doc.setFontStyle("normal");
+
+    ymi += 2;
+    let ymi_r = ymi;
+
+    // draw top-left content
+    const top_left = model_det.top_left;
+
+    for(let prop in top_left) {
+        doc.text(`${ prop } : ${ top_left[prop] }`, margin, margin + ymi * oneLineHeight);
+        ymi++;
+    }
+
+    // draw top-right content
+    const top_right = model_det.top_right;
+
+    for(let prop in top_right ) {
+        doc.text(`${ top_right[prop] }`, maxLineWidth + margin, margin + ymi_r * oneLineHeight,
+            { align: 'right'});
+        ymi_r++;
+    }
+
+    ymi = Math.max(ymi, ymi_r);
+    //ymi++;
+
+    // draw item details
     doc.autoTable({
-        startY: margin + 6 * oneLineHeight,
+        startY: margin + ymi * oneLineHeight,
         margin: 0.5,
         head: [ ['Description of Stores', 'Quantity'] ],
         body: data(isu_list, oneLineHeight),
@@ -964,13 +995,25 @@ function create_pdf(isu_list) {
         },
     });
 
-    let finalY = doc.previousAutoTable.finalY;
-    doc.text(`${ isu_list.model_details.bottom_note }`,
-        margin, finalY + 2 * oneLineHeight);
+    const finalY = doc.previousAutoTable.finalY;
 
-    doc.text(`.....................................`, margin, finalY + 6 * oneLineHeight);
-    doc.text(`${ isu_list.model_details.sign_usr_name }`, margin, finalY + 7 * oneLineHeight);
-    doc.text(`${ isu_list.model_details.sign_note }`, margin, finalY + 8 * oneLineHeight);
+    // draw bottom note area
+    const bottom = model_det.bottom_left;
+    ymi = 2;
+
+    for (let prop in bottom) {
+        doc.text(`${ bottom[prop] }`, margin, finalY + ymi * oneLineHeight);
+        ymi++;
+    }
+
+    // draw sign details
+    const sign_det = model_det.sign_det;
+    ymi += 3;
+
+    for (let prop in sign_det) {
+        doc.text(`${ sign_det[prop] }`, margin, finalY + ymi * oneLineHeight);
+        ymi++;
+    }
 
     doc.save('test.pdf');
 }
@@ -1036,7 +1079,7 @@ function submit_issue(isu_mdl, isu_list ) {
             console.log(res_obj.msg);
 
             reset_form(res_obj.items, rows);
-            pdf_list.model_details.tran_det = `Transaction ID: ${ res_obj.t_id }`;
+            pdf_list.model_details.top_right.tran_det = `Transaction ID: ${ res_obj.t_id }`;
             display_success(isu_mdl, pdf_list);
         }
         else {
