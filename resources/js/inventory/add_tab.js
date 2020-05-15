@@ -195,12 +195,12 @@ function process_data(form) {
         'model_details': {
             'heading': `Stock Note`,
             'top_left': [
-                `Date: ${ form.querySelector('#ad_fm_date').value }`,
-                `Received from: ${ form.querySelector('#ad_fm_sup').value }`,
-                `Issue Note no: ${ form.querySelector('#ad_fm_isn').value }`
+                `Date : ${ form.querySelector('#ad_fm_date').value }`,
+                `Received from : ${ form.querySelector('#ad_fm_sup').value }`,
+                `Issue Note no : ${ form.querySelector('#ad_fm_isn').value }`
             ],
             'bottom_note': `Above items are recorded in the inventory.`,
-            'description': `Description: ${ form.querySelector('#ad_fm_des').value }`,
+            'description': `Description : ${ form.querySelector('#ad_fm_des').value }`,
             'sign_note': `(Stock Officer)`,
             'sign_usr_name' : window.get_user().name,
             'btn_text' : `Confirm`,
@@ -239,6 +239,10 @@ function display_model(ad_model, isu_list, btn_func) {
             <div>
                 <div style="text-align: center">${ isu_list.model_details.heading }</div>
                 <div>`;
+
+    if( isu_list.model_details.tran_det ) {
+        ad_mdl_cont += `<div>${ isu_list.model_details.tran_det }</div>`;
+    }
 
     const details = isu_list.model_details.top_left,
         det_count = details.length;

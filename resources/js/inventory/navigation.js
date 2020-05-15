@@ -1,6 +1,7 @@
 import { init_add_tab } from './add_tab';
 import { init_isu_tab } from './issue_tab';
 import { init_view_tab } from './view_tab';
+import { init_reports_tab } from './reports_tab';
 import axios from 'axios';
 export { tab_selection };
 
@@ -39,7 +40,7 @@ function tab_selection(tab_no) {
         });
         break;
     case 3:
-        alert('reports tab');
+        get_reports_tab();
         break;
     /*case 4:
         window.location.replace("inventory/new/item");
@@ -110,4 +111,18 @@ async function get_view_tab() {
     } catch (error) {
         return error;
     }
+}
+
+/**
+ * xhr to get view tab
+ */
+function get_reports_tab() {
+    axios.get(`/inventory/tab/reports`)
+        .then(response => {
+            document.getElementById('grid_area').innerHTML = response.data;
+            init_reports_tab();
+        })
+        .catch(error => {
+            console.error('There has been a problem with your request:', error.toJSON());
+        });
 }
