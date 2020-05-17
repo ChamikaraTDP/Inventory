@@ -65,6 +65,9 @@ Route::post('/inventory/transaction/stock/put', 'TransactionController@put')->na
 // Issue items from stock
 Route::post('/inventory/transaction/stock/issue', 'TransactionController@stock_issue')->name('transaction_stock_issue');
 
+// Generate reports specific to the stock
+Route::post('/inventory/report/stock', 'ReportsController@stock')->name('reports_stock');
+
 // Generate reports
 Route::post('/inventory/report', 'ReportsController@generate')->name('reports_generate');
 

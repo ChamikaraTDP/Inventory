@@ -2,6 +2,7 @@ import { make_list, get_parent, tog_row_disp } from './helpers/utils';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { cloneDeep } from 'lodash';
+
 export { init_isu_tab, display_model, create_pdf };
 
 
@@ -66,8 +67,9 @@ function set_item_table(avl_itms) {
         cell3.innerHTML = item.quantity;
         cell3.setAttribute('data-cell', 'available');
 
-        cell4.innerHTML = `<input class='input_number max_width_short' type='number' min='1' max='${ item.quantity }'
-            name="isu_qt"/>`;
+        cell4.innerHTML = `
+            <input class='input_number max_width_short' type='number' min='1' max='${ item.quantity }'
+                name="isu_qt"/>`;
 
         const quan_input = cell4.querySelector("input[name='isu_qt']");
 
@@ -75,26 +77,26 @@ function set_item_table(avl_itms) {
         if(item.type) {
             cell5.innerHTML = `
              <button id='fil_btn_${ item.item_id }' class='button is-small is-info is-outlined' type='button'
-              name="isu_fil_btn">
+                name="isu_fil_btn">
                   Fill
              </button>
               
              <button id='isu_drop_btn_${ item.item_id }' style="display: none" class='button is-small'
-              type='button' name="inv_drop_btn">
+               type='button' name="inv_drop_btn">
                   <span class="icon is-small">
                        <i class="fas fa-chevron-down"></i>
                   </span>
              </button>
              
              <button  id='add_all_btn_${ item.item_id }' style="display: none"
-              class='button is-small is-info is-outlined' type='button' name="add_all_btn">
-                <span class="icon is-small">
-                    <i class="fas fa-share-square"></i>
-                </span>
+                class='button is-small is-info is-outlined' type='button' name="add_all_btn">
+                  <span class="icon is-small">
+                      <i class="fas fa-share-square"></i>
+                  </span>
               </button>
               
              <button  id='rmv_all_btn_${ item.item_id }' style="display: none"
-              class='button is-small is-danger is-outlined' type='button' name="rmv_all_btn">
+                class='button is-small is-danger is-outlined' type='button' name="rmv_all_btn">
                     <span class="icon is-small">
                         <i class="fas fa-trash-alt"></i>
                     </span>
@@ -160,7 +162,9 @@ function set_isu_list() {
         stn_drp_dv = document.getElementById('rcv_stn_dv');
 
 
-    stn_drp_dv.innerHTML = `<label for='rcv_stn' class="label_float">Receiving Station :</label>
+    stn_drp_dv.innerHTML = `
+        <label for='rcv_stn' class="label_float width_10">Receiving Station</label>
+        <span class="float_left padding_right_5">:</span>
         <div class="select is-small input_float">
             <select id='rcv_stn' style="font-size: var(--select-dropdown-font-size)" name='rcv_stn'>
                 ${ list }
@@ -283,7 +287,8 @@ function make_usr_list(stn_id) {
 
     const list = make_list(stn_users);
     document.getElementById('rcv_usr_dv').innerHTML = `
-            <label for='rcv_usr' class="label_float">Receiving Officer :</label>
+            <label for='rcv_usr' class="label_float width_10">Receiving Officer</label>
+            <span class="float_left padding_right_5">:</span>
             <div class="select is-small input_float">
                 <select id='rcv_usr' style="font-size: var(--select-dropdown-font-size)" name='rcv_usr'>
                     ${ list }
@@ -296,7 +301,7 @@ function make_usr_list(stn_id) {
 /**
  * Append num of divs containing inventory item inputs to a given cell
  *
- * @param {HTMLTableDataCellElement} cell       to where the divs added
+ * @param {HTMLElement} cell       to where the divs added
  * @param {number} num      number of divs should be added
  * @param {HTMLTableRowElement} prn_row     corresponding parent row of the item
  * @use inv_to_isu()
@@ -323,13 +328,13 @@ function append_divs(cell, num, prn_row) {
             </span>
             <span class="inline_block control">
                 <button class='button is-small is-danger is-outlined' type='button'
-                 name="inv_itm_rm_btn">
+                   name="inv_itm_rm_btn">
                     <span class="icon is-small"><i class="fas fa-minus"></i></span>
                  </button>
             </span>
             <span class="inline_block control">
                 <button style="display: none" class='button is-small is-info is-outlined' type='button'
-                name="inv_itm_ad_btn">
+                  name="inv_itm_ad_btn">
                     <span class="icon is-small"><i class="fas fa-plus"></i></span>
                 </button>
             </span>`;

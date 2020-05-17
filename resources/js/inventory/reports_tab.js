@@ -37,18 +37,20 @@ function make_report(rep_app) {
         u_stn: window.get_user_station().id,
     };
 
-    axios.post('inventory/report', query_obj)
+    let url = window.get_user().user_type === 'stock' ? 'inventory/report/stock' : 'inventory/report';
+
+    axios.post(url, query_obj)
         .then(response =>  {
             rep_app.item_data = response.data;
             rep_app.query_data = query_obj;
         })
         .catch(error => {
-            console.error('There has been a problem with your request:', error.toJSON());
+            console.error('There has been a problem with your request:', error.message);
         });
 }
 
 
-Vue.component('item-table', {
+Vue.component('item-table',{
     props: [ 'items', 'q_data' ],
 
     methods: {
@@ -74,7 +76,9 @@ Vue.component('item-table', {
                     <td></td>
                     <td>
                         <div style="display: flex; align-items: center; justify-content: center">
-                           <button class="button is-link is-outlined" @click="download_pdf">Save Report</button>
+                           <button class="button is-link is-outlined" @click="download_pdf">
+                                Save Report
+                           </button>
                         </div>
                     </td>
                 </tr>

@@ -35,7 +35,8 @@
         <div id="rcv_stn_dv" class="padding_all_4 auto_overflow clearfix"></div>
         <div id="rcv_usr_dv" class="padding_all_4 auto_overflow clearfix"></div>
         <div class="padding_all_4 auto_overflow clearfix">
-            <label for="isu_date" class="label_float">Date :</label>
+            <label for="isu_date" class="label_float width_10">Date</label>
+            <span class="float_left padding_right_5">:</span>
             <input id="isu_date"  class="form_input input_float" type="date" name="isu_date" required/>
         </div>
         <div class="level is-mobile">

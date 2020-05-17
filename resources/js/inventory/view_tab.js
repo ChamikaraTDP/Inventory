@@ -59,7 +59,7 @@ function fetch_all(view_app) {
             view_app.trans = response.data;
         })
         .catch(error => {
-            console.error('There has been a problem with your request:', error.toJSON());
+            console.error('There has been a problem with your request:', error.message);
         });
 }
 
@@ -207,7 +207,6 @@ function handle_station_issue(transac) {
             return response.json();
         })
         .then(items => {
-            //console.log(items);
             const isu_list = {
                 'items': items,
 
@@ -254,7 +253,6 @@ function handle_stock_receipt(transac) {
             return response.json();
         })
         .then(items => {
-            //console.log(items);
             const isu_list = {
                 'items': items,
 
@@ -285,8 +283,44 @@ function handle_stock_receipt(transac) {
         });
 }
 
-function handle_station_receipt() {
-    console.log('stn_isu');
+function handle_station_receipt(transac) {
+    axios.get(`/inventory/transaction/${ transac.id }`)
+        .then(response => {
+            const isu_list = {
+                'items': response.data,
+
+                'model_details': {
+                    'heading': `Receipt`,
+                    'top_left': {
+                        'Received Station' : transac.rcv_stn,
+                        'Issued Station' : transac.isu_stn,
+                        'Issued Officer' : transac.isu_usr,
+                    },
+                    'top_right': {
+                        'tran_det': `Transaction ID : ${ transac.id }`,
+                    },
+                    'bottom_left': {
+                        'Issue note': `Received on ${ transac.isu_date } and the receipt duly entered.`,
+                    },
+                    'sign_det': {
+                        'dots': '.............................................',
+                        'sign_usr_name': transac.rcv_usr,
+                        'sign_note': `(Receiving Officer)`,
+                    },
+                    'btn_text': `Download PDF`,
+                },
+            };
+
+            const isu_mdl = document.getElementById('isu_mdl');
+
+            isu_model(isu_mdl, isu_list, function(i_mdl, i_list) {
+                isu_pdf(i_list);
+            });
+        })
+        .catch(error => {
+            console.error('Error occurred while fetching transaction details:', error.message);
+        });
+
 }
 
 const debounced_search = debounce(search_trans, 600);

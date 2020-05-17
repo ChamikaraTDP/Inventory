@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\InventoryItem;
+use App\Item;
+use App\Policies\InvItemPolicy;
+use App\Policies\ItemPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -13,7 +17,8 @@ class AuthServiceProvider extends ServiceProvider
      * @var array
      */
     protected $policies = [
-        // 'App\Model' => 'App\Policies\ModelPolicy',
+        InventoryItem::class => InvItemPolicy::class,
+        Item::class => ItemPolicy::class,
     ];
 
     /**
@@ -25,6 +30,8 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
-        //
+        Gate::define('edit_settings', function ($user) {
+            return $user->user_type == 'admin';
+        });
     }
 }

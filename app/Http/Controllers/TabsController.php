@@ -11,17 +11,6 @@ class TabsController extends Controller
 {
     use Utils;
 
-
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct() {
-        $this->middleware('auth');
-    }
-
-
     /**
      * render the issue tab
      * response with station & user data
@@ -37,11 +26,9 @@ class TabsController extends Controller
         if(is_array($avl_items)) {
             try {
                 $issue_view = view('/tabs/issue')->render();
-
                 return response()->json(array("issue_view" => $issue_view, "items" => $avl_items));
-
-            } catch (Throwable $e) {
-
+            }
+            catch (Throwable $e) {
                 return response(' error occurred during view rendering ', 500);
             }
         }
@@ -65,15 +52,11 @@ class TabsController extends Controller
 
         try {
             $view_tab = view('/tabs/view')->render();
-
             return response()->json(array("view_tab" => $view_tab, "trans" => $trans));
-
-        } catch (Throwable $e) {
-
-            return response(' error occurred during view rendering ', 500);
-
         }
-
+        catch (Throwable $e) {
+            return response(' error occurred during view rendering ', 500);
+        }
     }
 
 

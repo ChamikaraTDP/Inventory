@@ -4,25 +4,27 @@
     <!-- navigation bar -->
     <div class="tabs is-centered is-boxed">
         <ul>
-            <li class="is-active">
+            @can('create', \App\InventoryItem::class)
+            <li id="tab_0" class="is-active">
                 <a onclick="tab_selection(0)">
                     <span class="icon is-small"><i class="fas fa-warehouse" aria-hidden="true"></i></span>
                     <span>Add</span>
                 </a>
             </li>
-            <li>
+            @endcan
+            <li id="tab_1">
                 <a onclick="tab_selection(1);">
                     <span class="icon is-small"><i class="fas fa-file-signature" aria-hidden="true"></i></span>
                     <span>Issue</span>
                 </a>
             </li>
-            <li>
+            <li id="tab_2">
                 <a onclick="tab_selection(2)">
                     <span class="icon is-small"><i class="fas fa-binoculars" aria-hidden="true"></i></span>
                     <span>View</span>
                 </a>
             </li>
-            <li>
+            <li id="tab_3">
                 <a onclick="tab_selection(3)">
                     <span class="icon is-small"><i class="fas fa-clipboard-list" aria-hidden="true"></i></span>
                     <span>Reports</span>
@@ -30,13 +32,6 @@
             </li>
         </ul>
     </div>
-    {{--<div class="nv_box">
-        <button onclick="tab_selection(0);">Add</button>
-        <button onclick="tab_selection(1);">Issue</button>
-        <button onclick="tab_selection(2);">View</button>
-        <button onclick="tab_selection(3);">Reports</button>
-        <button onclick="tab_selection(4);">New Item</button>
-    </div>--}}
 
     <div class="container" id="grid_area"></div>
 
@@ -78,6 +73,13 @@
         function getCSRF() {
              return '{{ csrf_token() }}';
         }
+
+        window.onclick = function(event) {
+            if(!event.target.matches('.navbar-link')){
+                const drop_down = document.getElementById('nav_drops');
+                drop_down.classList.toggle('is-active', false);
+            }
+        };
     </script>
 
     <script src="{{ asset('js/inventory.js') }}"></script>

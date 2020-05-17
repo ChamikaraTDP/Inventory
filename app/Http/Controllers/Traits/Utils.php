@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Traits;
 
 use Illuminate\Support\Facades\DB;
+use phpDocumentor\Reflection\Types\Collection;
 use stdClass;
 
 trait Utils {
@@ -96,7 +97,6 @@ trait Utils {
      * @return \Illuminate\Support\Collection
      */
     public function get_all_bulk($qd) {
-
         $is_rcv = $qd->tran_type == 'rcv';
         $full_range = $qd->start_date && $qd->end_date;
 
@@ -125,17 +125,16 @@ trait Utils {
         return $items;
     }
 
+
     /**
-     * retrieve all received/issued item quantities
+     * retrieve all received/issued item details
      *
      * @param $qd
-     * @return \Illuminate\Support\Collection
+     * @return array
      */
     public function get_all_inv($qd) {
-
         $is_rcv = $qd->tran_type == 'rcv';
         $full_range = $qd->start_date && $qd->end_date;
-        $to_stock = $is_rcv && $qd->u_stn == 1;
 
         $item_info = DB::table("transactions")
             ->join("transaction_inventory",
@@ -143,11 +142,7 @@ trait Utils {
             ->join("inventory_items",
                 "transaction_inventory.inventory_item_id", "=", "inventory_items.id")
             ->join("items", "inventory_items.item_id", "=", "items.id")
-            ->when( $to_stock, function ($query) use ($qd) {
-                return $query->select('name', DB::raw('count(*) as quantity'));
-            }, function ($query) {
-                return $query->select('item_id', 'items.name', 'item_code', 'serial_no');
-            })
+            ->select('item_id', 'items.name', 'item_code', 'serial_no')
             ->when($is_rcv, function ($query) use ($qd) {
                 return $query->where('transactions.receiving_station', $qd->u_stn);
             }, function ($query) use ($qd) {
@@ -163,19 +158,51 @@ trait Utils {
                         return $query->where('issuing_date', '<=', $qd->end_date);
                     });
             })
-            ->when($to_stock, function ($query) {
-                return $query->groupBy("item_id");
-            }, function ($query) {
-                return $query->orderBy("item_id");
-            })
+            ->orderBy("item_id")
             ->get();
 
-        if($to_stock) {
-            return $item_info;
-        }
-        else {
-            return $this->process_inv_info($item_info);
-        }
+        return $this->process_inv_info($item_info);
+
+    }
+
+
+    /**
+     * retrieve all received/issued inventory item counts
+     *
+     * @param $qd
+     * @return \Illuminate\Support\Collection
+     */
+    public function get_all_inv_count($qd) {
+        $is_rcv = $qd->tran_type == 'rcv';
+        $full_range = $qd->start_date && $qd->end_date;
+
+        $item_info = DB::table("transactions")
+            ->join("transaction_inventory",
+                "transactions.id" , "=", "transaction_inventory.transaction_id")
+            ->join("inventory_items",
+                "transaction_inventory.inventory_item_id", "=", "inventory_items.id")
+            ->join("items", "inventory_items.item_id", "=", "items.id")
+            ->select('name', DB::raw('count(*) as quantity'))
+            ->when($is_rcv, function ($query) use ($qd) {
+                return $query->where('transactions.receiving_station', $qd->u_stn);
+            }, function ($query) use ($qd) {
+                return $query->where('transactions.issuing_station', $qd->u_stn);
+            })
+            ->when($full_range, function ($query) use ($qd) {
+                return $query->whereBetween('issuing_date', [$qd->start_date, $qd->end_date]);
+            }, function ($query) use ($qd) {
+                return $query->when($qd->start_date, function ($query) use ($qd){
+                    return $query->where('issuing_date', '>=', $qd->start_date);
+                })
+                    ->when($qd->end_date, function ($query) use ($qd) {
+                        return $query->where('issuing_date', '<=', $qd->end_date);
+                    });
+            })
+            ->groupBy("item_id")
+            ->get();
+
+        return $item_info;
+
     }
 
 

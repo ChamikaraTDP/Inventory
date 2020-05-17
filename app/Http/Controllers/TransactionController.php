@@ -282,7 +282,7 @@ class TransactionController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Support\Collection
      */
-    public function search(Request $request){
+    public function search(Request $request) {
         if($request->phase == '') {
             return redirect()->action('TransactionController@all', ['stn' => $request->stn]);
         }
