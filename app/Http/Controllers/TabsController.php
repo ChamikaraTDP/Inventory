@@ -11,14 +11,29 @@ class TabsController extends Controller
 {
     use Utils;
 
-
     /**
-     * Create a new controller instance.
+     * render the issue tab
+     * response with station & user data
      *
-     * @return void
+     * @param Request $request
+     * @return \Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function __construct() {
-        $this->middleware('auth');
+    public function stk_issue() {
+
+        $avl_items = $this->get_items(1);
+
+        if(is_array($avl_items)) {
+            try {
+                $issue_view = view('/tabs/issue')->render();
+                return response()->json(array("issue_view" => $issue_view, "items" => $avl_items));
+            }
+            catch (Throwable $e) {
+                return response(' error occurred during view rendering ', 500);
+            }
+        }
+        else {
+            return response(' error occurred when loading the items ', 500);
+        }
     }
 
 
@@ -29,19 +44,17 @@ class TabsController extends Controller
      * @param Request $request
      * @return \Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function issue(Request $request) {
+    public function stn_issue(Request $request) {
         $station = $request->stn;
 
-        $avl_items = $this->get_items($station);
+        $avl_items = $this->get_items_with_codes($station);
 
         if(is_array($avl_items)) {
             try {
                 $issue_view = view('/tabs/issue')->render();
-
                 return response()->json(array("issue_view" => $issue_view, "items" => $avl_items));
-
-            } catch (Throwable $e) {
-
+            }
+            catch (Throwable $e) {
                 return response(' error occurred during view rendering ', 500);
             }
         }
@@ -65,15 +78,11 @@ class TabsController extends Controller
 
         try {
             $view_tab = view('/tabs/view')->render();
-
             return response()->json(array("view_tab" => $view_tab, "trans" => $trans));
-
-        } catch (Throwable $e) {
-
-            return response(' error occurred during view rendering ', 500);
-
         }
-
+        catch (Throwable $e) {
+            return response(' error occurred during view rendering ', 500);
+        }
     }
 
 

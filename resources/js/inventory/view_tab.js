@@ -59,7 +59,7 @@ function fetch_all(view_app) {
             view_app.trans = response.data;
         })
         .catch(error => {
-            console.error('There has been a problem with your request:', error.toJSON());
+            console.error('There has been a problem with your request:', error.message);
         });
 }
 
@@ -139,14 +139,14 @@ Vue.component('transaction', {
     },
 
     template: `
-        <article class="media">
+        <article class="media max_width_100">
             <div class="media-left" v-if="isIssue">
                 <span class="tag is-large is-warning is-rounded"><span class="icon">I</span></span>
             </div>
             <div class="media-left" v-else>
                 <span class="tag is-large is-link is-rounded"><span class="icon">R</span></span>
             </div>
-            <div class="media-content">
+            <div class="media-content min_width_0">
                 <nav style="margin-bottom: 1rem" class="level">
                     <div class="level-left">
                         <span class="level-item">
@@ -166,24 +166,31 @@ Vue.component('transaction', {
                         </span>
                     </div>
                 </nav>
-                <div class="content">
-                    <div class="tags are-medium">                        
-                        <template v-if="isIssue">
-                            <span class="tag is-white">Issued To :</span>
-                            <span class="tag is-info is-rounded">
-                                {{ record.rcv_stn }}
-                            </span>
-                        </template>                            
-                        <template v-else>
-                            <span class="tag is-white">Received From :</span>
-                            <span class="tag is-info is-rounded" 
-                              v-if="record.type === 'to_stock'">
-                                {{ record.sup }}
-                            </span>
-                            <span class="tag is-info is-rounded" v-else>
-                                {{ record.isu_stn }}
-                            </span>
-                        </template>
+                <div class="level min_width_0">
+                    <div class="level-left">
+                        <div class="level-item tags are-medium">                        
+                            <template v-if="isIssue">
+                                <span class="tag is-white">Issued To :</span>
+                                <span class="tag is-info is-rounded">
+                                    {{ record.rcv_stn }}
+                                </span>
+                            </template>                            
+                            <template v-else>
+                                <span class="tag is-white">Received From :</span>
+                                <span class="tag is-info is-rounded" 
+                                  v-if="record.type === 'to_stock'">
+                                    {{ record.sup }}
+                                </span>
+                                <span class="tag is-info is-rounded" v-else>
+                                    {{ record.isu_stn }}
+                                </span>
+                            </template>
+                        </div>                        
+                    </div>
+                    <div style="max-width: 50%" class="level-right min_width_0">
+                        <div class="level-item max_width_100 min_width_0">
+                            <p class="text_ellipsis">{{ record.des }}</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -207,7 +214,6 @@ function handle_station_issue(transac) {
             return response.json();
         })
         .then(items => {
-            //console.log(items);
             const isu_list = {
                 'items': items,
 
@@ -222,6 +228,7 @@ function handle_station_issue(transac) {
                         'tran_det': `Transaction ID : ${ transac.id }`,
                     },
                     'bottom_left': {
+                        'description': `Description: ${ transac.des ? transac.des : 'not provided'}`,
                         'Issue note': `Issued on ${ transac.isu_date } and the issue duly entered.`,
                     },
                     'sign_det': {
@@ -254,7 +261,6 @@ function handle_stock_receipt(transac) {
             return response.json();
         })
         .then(items => {
-            //console.log(items);
             const isu_list = {
                 'items': items,
 
@@ -266,7 +272,7 @@ function handle_stock_receipt(transac) {
                         `Issue Note no : ${ transac.rcp_no }`,
                     ],
                     'bottom_note': `Above items are recorded in the inventory.`,
-                    'description': `Description: ${ transac.des }`,
+                    'description': `Description: ${ transac.des ? transac.des : 'not provided' }`,
                     'sign_note': `(Stock Officer)`,
                     'sign_usr_name' : transac.rcv_usr,
                     'btn_text' : `Download PDF`,
@@ -285,8 +291,45 @@ function handle_stock_receipt(transac) {
         });
 }
 
-function handle_station_receipt() {
-    console.log('stn_isu');
+function handle_station_receipt(transac) {
+    axios.get(`/inventory/transaction/${ transac.id }`)
+        .then(response => {
+            const isu_list = {
+                'items': response.data,
+
+                'model_details': {
+                    'heading': `Receipt`,
+                    'top_left': {
+                        'Received Station' : transac.rcv_stn,
+                        'Issued Station' : transac.isu_stn,
+                        'Issued Officer' : transac.isu_usr,
+                    },
+                    'top_right': {
+                        'tran_det': `Transaction ID : ${ transac.id }`,
+                    },
+                    'bottom_left': {
+                        'description': `Description: ${ transac.des ? transac.des : 'not provided' }`,
+                        'Issue note': `Received on ${ transac.isu_date } and the receipt duly entered.`,
+                    },
+                    'sign_det': {
+                        'dots': '.............................................',
+                        'sign_usr_name': transac.rcv_usr,
+                        'sign_note': `(Receiving Officer)`,
+                    },
+                    'btn_text': `Download PDF`,
+                },
+            };
+
+            const isu_mdl = document.getElementById('isu_mdl');
+
+            isu_model(isu_mdl, isu_list, function(i_mdl, i_list) {
+                isu_pdf(i_list);
+            });
+        })
+        .catch(error => {
+            console.error('Error occurred while fetching transaction details:', error.message);
+        });
+
 }
 
 const debounced_search = debounce(search_trans, 600);

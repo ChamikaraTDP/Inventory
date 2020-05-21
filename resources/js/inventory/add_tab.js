@@ -200,7 +200,9 @@ function process_data(form) {
                 `Issue Note no : ${ form.querySelector('#ad_fm_isn').value }`
             ],
             'bottom_note': `Above items are recorded in the inventory.`,
-            'description': `Description : ${ form.querySelector('#ad_fm_des').value }`,
+            'description': `Description : ${ 
+                form.querySelector('#ad_fm_des').value ? form.querySelector('#ad_fm_des').value :
+                    'not provided' }`,
             'sign_note': `(Stock Officer)`,
             'sign_usr_name' : window.get_user().name,
             'btn_text' : `Confirm`,
@@ -237,7 +239,7 @@ function display_model(ad_model, isu_list, btn_func) {
         `<div id="ad_mdl_cont" class="mdl_cont">
             <span id="ad_mdl_close" class="mdl_close">&times</span>
             <div>
-                <div style="text-align: center">${ isu_list.model_details.heading }</div>
+                <div style="text-align: center"><strong>${ isu_list.model_details.heading }</strong></div>
                 <div>`;
 
     if( isu_list.model_details.tran_det ) {
@@ -314,7 +316,7 @@ function display_model(ad_model, isu_list, btn_func) {
  * @use reset_form()
  */
 function sendData(ad_model, pdf_list) {
-    console.log('initialize form data');
+    //console.log('initialize form data');
 
     const form = document.getElementById('ad_itm_form');
 
@@ -362,14 +364,15 @@ function sendData(ad_model, pdf_list) {
     }
 
     XHR.addEventListener('load', function(event) {
-        console.log('response loaded');
+        //console.log('response loaded');
 
         if (event.target.status === 200) {
-            console.log('items added successfully');
+            //console.log('items added successfully');
             reset_form(form);
             pdf_list.model_details.tran_det = `Transaction ID: ${ event.target.responseText }`;
             display_success(ad_model, pdf_list);
-        } else {
+        }
+        else {
             console.log(event.target.status + ' ' + event.target.statusText);
             alert('Something went wrong:(');
         }
@@ -428,7 +431,7 @@ function reset_form(form){
 
         form.reset();
         insert_row();
-        console.log('form resets successfully');
+        //console.log('form resets successfully');
 
     } catch (e) {
         console.log('error occurred while resetting the form' + e);

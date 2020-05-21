@@ -1,9 +1,5 @@
 <div class="columns is-variable is-2">
 
-    {{--<div class="column is-2">
-        <h6>Filer & search</h6>
-    </div>--}}
-
     <div style="margin-right: var(--column-margin-right)" class="column is-7 box auto_overflow">
         <h5 style="padding-left: var(--title-padding-left)" class="title is-5">Items in Station</h5>
         <table class="table is-fullwidth is-hoverable">
@@ -35,8 +31,13 @@
         <div id="rcv_stn_dv" class="padding_all_4 auto_overflow clearfix"></div>
         <div id="rcv_usr_dv" class="padding_all_4 auto_overflow clearfix"></div>
         <div class="padding_all_4 auto_overflow clearfix">
-            <label for="isu_date" class="label_float">Date :</label>
+            <label for="isu_date" class="label_float width_10">Date</label>
+            <span class="float_left padding_right_5">:</span>
             <input id="isu_date"  class="form_input input_float" type="date" name="isu_date" required/>
+        </div>
+        <div class="padding_all_4 auto_overflow clearfix">
+            <label for="isu_lst_des" class="label_float width_10">Description</label>
+            <textarea id="isu_lst_des" class="textarea" name="description" rows="1"></textarea>
         </div>
         <div class="level is-mobile">
             <div class="level-left"></div>
@@ -51,5 +52,6 @@
         </div>
     </div>
 </div>
+
 <div id="isu_mdl" class="model">
 </div>

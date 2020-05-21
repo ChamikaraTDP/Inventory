@@ -2,7 +2,16 @@ import { make_list, get_parent, tog_row_disp } from './helpers/utils';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { cloneDeep } from 'lodash';
-export { init_isu_tab, display_model, create_pdf };
+
+export {
+    init_isu_tab,
+    set_isu_list,
+    display_model,
+    create_pdf,
+    display_success,
+    display_loading,
+    reset_form
+};
 
 
 /**
@@ -10,9 +19,6 @@ export { init_isu_tab, display_model, create_pdf };
  *
  * @param {array} avl_itms      All available items in current station as objects
  *
- * @use set_item_table()
- * @use set_isu_list()
- * @use #isu_sub_btn
  */
 function init_isu_tab(avl_itms) {
     set_item_table(avl_itms); // set middle item list
@@ -34,14 +40,7 @@ function init_isu_tab(avl_itms) {
 function set_item_table(avl_itms) {
     const tbl_bd = document.getElementById('itm_tbl_bd');
 
-    let row = {},
-        cell1 = {},
-        cell2 = {},
-        cell3 = {},
-        cell4 = {},
-        cell5 = {},
-        cat = {},
-        item = {};
+    let row = {}, cell1 = {}, cell2 = {}, cell3 = {},cell4 = {}, cell5 = {}, cat = {}, item = {};
 
     for (item of avl_itms) {
         row = document.createElement('TR');
@@ -66,8 +65,9 @@ function set_item_table(avl_itms) {
         cell3.innerHTML = item.quantity;
         cell3.setAttribute('data-cell', 'available');
 
-        cell4.innerHTML = `<input class='input_number max_width_short' type='number' min='1' max='${ item.quantity }'
-            name="isu_qt"/>`;
+        cell4.innerHTML = `
+            <input class='input_number max_width_short' type='number' min='1' max='${ item.quantity }'
+                name="isu_qt"/>`;
 
         const quan_input = cell4.querySelector("input[name='isu_qt']");
 
@@ -75,26 +75,26 @@ function set_item_table(avl_itms) {
         if(item.type) {
             cell5.innerHTML = `
              <button id='fil_btn_${ item.item_id }' class='button is-small is-info is-outlined' type='button'
-              name="isu_fil_btn">
+                name="isu_fil_btn">
                   Fill
              </button>
               
              <button id='isu_drop_btn_${ item.item_id }' style="display: none" class='button is-small'
-              type='button' name="inv_drop_btn">
-                  <span class="icon is-small">
-                       <i class="fas fa-chevron-down"></i>
-                  </span>
+               type='button' name="inv_drop_btn">
+                 <span class="icon is-small">
+                     <i class="fas fa-chevron-down"></i>
+                 </span>
              </button>
              
              <button  id='add_all_btn_${ item.item_id }' style="display: none"
-              class='button is-small is-info is-outlined' type='button' name="add_all_btn">
-                <span class="icon is-small">
-                    <i class="fas fa-share-square"></i>
-                </span>
+                class='button is-small is-info is-outlined' type='button' name="add_all_btn">
+                  <span class="icon is-small">
+                      <i class="fas fa-share-square"></i>
+                  </span>
               </button>
               
              <button  id='rmv_all_btn_${ item.item_id }' style="display: none"
-              class='button is-small is-danger is-outlined' type='button' name="rmv_all_btn">
+                class='button is-small is-danger is-outlined' type='button' name="rmv_all_btn">
                     <span class="icon is-small">
                         <i class="fas fa-trash-alt"></i>
                     </span>
@@ -116,7 +116,7 @@ function set_item_table(avl_itms) {
         else {     // bulk items
             cell5.innerHTML = `
                 <button id='isu_ad_btn_${ item.item_id }' class='button is-small'
-                 type='button' name="isu_ad_btn">
+                  type='button' name="isu_ad_btn">
                     <span class="icon is-small">
                         <i class="fas fa-arrow-right"></i>
                     </span>
@@ -160,9 +160,12 @@ function set_isu_list() {
         stn_drp_dv = document.getElementById('rcv_stn_dv');
 
 
-    stn_drp_dv.innerHTML = `<label for='rcv_stn' class="label_float">Receiving Station :</label>
+    stn_drp_dv.innerHTML = `
+        <label for='rcv_stn' class="label_float width_10">Receiving Station</label>
+        <span class="float_left padding_right_5">:</span>
         <div class="select is-small input_float">
-            <select id='rcv_stn' style="font-size: var(--select-dropdown-font-size)" name='rcv_stn'>
+            <select id='rcv_stn' style="font-size: var(--select-dropdown-font-size)" name='rcv_stn' required>
+                <option value="">Select Station</option>
                 ${ list }
             </select>
         </div>`;
@@ -188,7 +191,8 @@ function set_isu_list() {
  */
 function disp_fil_list(node) {
     const prn_row = get_parent(node, 'TR'),
-        isu_qt = Number(prn_row.querySelector("input[name='isu_qt']").value),
+        isu_node = prn_row.querySelector("input[name='isu_qt']"),
+        isu_qt = isu_node.value,
         av_qt = Number( prn_row.querySelector("td[data-cell='available']").innerText );
 
     if (isu_qt > av_qt || isu_qt < 1) {
@@ -209,6 +213,8 @@ function disp_fil_list(node) {
 
         row.appendChild(cell);
         prn_row.insertAdjacentElement('afterend', row);
+
+        isu_node.value = 0;
 
         toggle_btns(row, prn_row);
     }
@@ -283,9 +289,11 @@ function make_usr_list(stn_id) {
 
     const list = make_list(stn_users);
     document.getElementById('rcv_usr_dv').innerHTML = `
-            <label for='rcv_usr' class="label_float">Receiving Officer :</label>
+            <label for='rcv_usr' class="label_float width_10">Receiving Officer</label>
+            <span class="float_left padding_right_5">:</span>
             <div class="select is-small input_float">
-                <select id='rcv_usr' style="font-size: var(--select-dropdown-font-size)" name='rcv_usr'>
+                <select id='rcv_usr' style="font-size:var(--select-dropdown-font-size)" name='rcv_usr' required>
+                    <option value="">Select Officer</option>
                     ${ list }
                 </select>
             </div>`;
@@ -296,7 +304,7 @@ function make_usr_list(stn_id) {
 /**
  * Append num of divs containing inventory item inputs to a given cell
  *
- * @param {HTMLTableDataCellElement} cell       to where the divs added
+ * @param {HTMLElement} cell       to where the divs added
  * @param {number} num      number of divs should be added
  * @param {HTMLTableRowElement} prn_row     corresponding parent row of the item
  * @use inv_to_isu()
@@ -311,7 +319,7 @@ function append_divs(cell, num, prn_row) {
         div.classList.add('field', 'is-grouped');
         div.innerHTML = `
             <span class="inline_block control">
-                <input id="" class='form_input' type='text' name='itm_code' placeholder="Item Code">
+                <input class='form_input' type='text' name='itm_code' placeholder="Item Code">
             </span>
             <span class="inline_block control">
                 <input class='form_input' type='text' name='serial_no' placeholder="Serial Number">
@@ -323,13 +331,13 @@ function append_divs(cell, num, prn_row) {
             </span>
             <span class="inline_block control">
                 <button class='button is-small is-danger is-outlined' type='button'
-                 name="inv_itm_rm_btn">
+                  name="inv_itm_rm_btn">
                     <span class="icon is-small"><i class="fas fa-minus"></i></span>
                  </button>
             </span>
             <span class="inline_block control">
                 <button style="display: none" class='button is-small is-info is-outlined' type='button'
-                name="inv_itm_ad_btn">
+                  name="inv_itm_ad_btn">
                     <span class="icon is-small"><i class="fas fa-plus"></i></span>
                 </button>
             </span>`;
@@ -457,10 +465,13 @@ function inv_to_isu(ad_btn, prn_row) {
             </span>
         </button>`;
 
+    const qt_node = prn_row.querySelector("input[name='isu_qt']");
+
     div.querySelector("button[name='inv_itm_rm_btn']")
         .addEventListener('click', function() {
             const qun_node = itm_row.querySelector("td[data-cell='quantity']");
             const qun = Number(qun_node.innerText) - 1;
+            qt_node.value =  Number(qt_node.value) - 1;
 
             if(qun === 0) {
                 itm_row.nextElementSibling.remove();
@@ -476,10 +487,10 @@ function inv_to_isu(ad_btn, prn_row) {
 
             ad_btn.disabled = false;
             rm_btn.disabled = false;
+            ad_btn.classList.toggle('is-active');
+            rm_btn.classList.toggle('is-active');
             item_inp.disabled = false;
             seri_inp.disabled = false;
-            //ad_btn.setAttribute('class', 'add_btn isu_ad_btn');
-            //rm_btn.setAttribute('class', 'rm_btn isu_ad_btn');
 
         });
 
@@ -531,34 +542,36 @@ function inv_to_isu(ad_btn, prn_row) {
         code_row.appendChild(cell);
 
         cell3.querySelector("button[name='isu_tog_btn']")
-        .addEventListener('click', function (){
-            tog_row_disp(code_row);
-        });
+            .addEventListener('click', function (){
+                tog_row_disp(code_row);
+            });
 
         cell3.querySelector("button[name='rmv_all_btn']")
-        .addEventListener('click', function() {
-            const rm_btns = code_row.querySelectorAll("button[name='inv_itm_rm_btn']");
+            .addEventListener('click', function() {
+                const rm_btns = code_row.querySelectorAll("button[name='inv_itm_rm_btn']");
 
-            for (let btn of rm_btns) {
-                btn.click();
-            }
-        });
+                for (let btn of rm_btns) {
+                    btn.click();
+                }
+            });
 
         document.getElementById('isu_tbl_bd').appendChild(itm_row);
         itm_row.insertAdjacentElement('afterend', code_row);
     }
+
+    qt_node.value = Number(qt_node.value) + 1;
 
     return true;
 }
 
 
 function rm_function(rm_btn, prn_row, cell) {
-    const cur_div = get_parent(rm_btn, 'DIV');
-    const isu_node = prn_row.querySelector("input[name='isu_qt']");
-    const av_qt = Number( prn_row.querySelector("td[data-cell='available']").innerText );
-    const count = Number(isu_node.value) - 1;
+    const cur_div = get_parent(rm_btn, 'DIV'),
+        //isu_node = prn_row.querySelector("input[name='isu_qt']"),
+        av_qt = Number( prn_row.querySelector("td[data-cell='available']").innerText ),
+        count = cell.childElementCount - 1;
 
-    isu_node.value = count;
+    //isu_node.value = count;
 
     if(count === 0){
         remove_row(cell.parentNode, prn_row);
@@ -580,14 +593,14 @@ function rm_function(rm_btn, prn_row, cell) {
 
 
 function add_div(ad_btn, cell, prn_row) {
-    const isu_node = prn_row.querySelector("input[name='isu_qt']");
+    //const isu_node = prn_row.querySelector("input[name='isu_qt']");
     const av_qt = Number( prn_row.querySelector("td[data-cell='available']").innerText );
-    const count = Number(isu_node.value) + 1;
+    const count = cell.childElementCount + 1;
 
     if( count <= av_qt) {
         ad_btn.style.display = 'none';
         append_divs(cell, 1, prn_row);
-        isu_node.value = count;
+        //isu_node.value = count;
 
         if( count < av_qt ) {
             cell.lastElementChild.querySelector(
@@ -601,11 +614,11 @@ function add_div(ad_btn, cell, prn_row) {
 
 
 function remove_row(row, prn_row) {
-    const drp = prn_row.querySelector("button[name='inv_drop_btn']");
-    const rmv = prn_row.querySelector("button[name='rmv_all_btn']");
-    const fil = prn_row.querySelector("button[name='isu_fil_btn']");
-    const add = prn_row.querySelector("button[name='add_all_btn']");
-    const isu = prn_row.querySelector("input[name='isu_qt']");
+    const drp = prn_row.querySelector("button[name='inv_drop_btn']"),
+        rmv = prn_row.querySelector("button[name='rmv_all_btn']"),
+        fil = prn_row.querySelector("button[name='isu_fil_btn']"),
+        add = prn_row.querySelector("button[name='add_all_btn']"),
+        isu = prn_row.querySelector("input[name='isu_qt']");
 
     let drp_clone = drp.cloneNode(true);
     let rmv_clone = rmv.cloneNode(true);
@@ -617,6 +630,7 @@ function remove_row(row, prn_row) {
     rmv_clone.style.display = 'none';
     add.style.display = 'none';
     fil.style.display = 'inline-block';
+    isu.value = '';
     isu.disabled = false;
 
     row.remove();
@@ -648,6 +662,7 @@ function process_data() {
         rcv_stn = document.getElementById('rcv_stn'),
         rcv_usr = document.getElementById('rcv_usr'),
         isu_date = document.getElementById('isu_date'),
+        des = document.getElementById('isu_lst_des'),
         rows = isu_tbl.rows,
         row_len = rows.length;
 
@@ -655,7 +670,7 @@ function process_data() {
         alert('No items selected!');
         throw Error('issuing table does not contain any items!');
     }
-    else if (isu_date.value === '') {
+    else if (rcv_stn.value === '' || rcv_usr.value === '' || isu_date.value === '') {
         alert('Please fill the required fields!');
         throw Error('required fields are not filled');
     }
@@ -677,6 +692,7 @@ function process_data() {
             },
             'top_right': {},
             'bottom_left': {
+                'description': `Description: ${ des.value ? des.value : 'not provided' }`,
                 'Issued on': `Issued on ${ isu_date.value } and the issue duly entered.`,
             },
             'sign_det': {
@@ -734,9 +750,10 @@ function process_data() {
         isu_date: isu_date.value,
         isu_stn: window.get_user_station().id,
         isu_usr: window.get_user().id,
+        description: des.value,
     };
 
-    console.log(isu_list);
+    //console.log(isu_list);
 
     return isu_list;
 }
@@ -848,7 +865,8 @@ function display_model(isu_mdl, isu_list, button_func) {
     let bot_lef = model_details.bottom_left;
 
     for(let key in bot_lef) {
-        isu_mdl_cont +=`<div>${ bot_lef[key] }</div>`;
+        isu_mdl_cont +=`<div>${ bot_lef[key] }</div>
+                        <br>`;
     }
 
     isu_mdl_cont  +=  `<br>`;
@@ -1003,7 +1021,7 @@ function create_pdf(isu_list) {
 
     for (let prop in bottom) {
         doc.text(`${ bottom[prop] }`, margin, finalY + ymi * oneLineHeight);
-        ymi++;
+        ymi += 2;
     }
 
     // draw sign details
@@ -1064,22 +1082,24 @@ function submit_issue(isu_mdl, isu_list ) {
     display_loading(isu_mdl);
 
     const pdf_list = cloneDeep(isu_list);
+
     delete isu_list.model_details;
 
     const rows = document.getElementById('isu_lst_tbl').rows;
-    console.log('data sending');
+    //console.log('data sending');
 
     const XHR = new XMLHttpRequest();
 
     XHR.addEventListener('load', function(event) {
         if(event.target.status === 200) {
-            console.log('issue response loaded');
+            //console.log('issue response loaded');
 
             const res_obj = JSON.parse(event.target.response);
-            console.log(res_obj.msg);
+            //console.log(res_obj.msg);
+            reset_form(res_obj.items, rows, set_item_table);
 
-            reset_form(res_obj.items, rows);
             pdf_list.model_details.top_right.tran_det = `Transaction ID: ${ res_obj.t_id }`;
+
             display_success(isu_mdl, pdf_list);
         }
         else {
@@ -1100,7 +1120,7 @@ function submit_issue(isu_mdl, isu_list ) {
 }
 
 
-function reset_form(items, rows) {
+function reset_form(items, rows, redraw) {
 
     try {
         let i = rows.length - 1;
@@ -1109,11 +1129,15 @@ function reset_form(items, rows) {
             rows[i].remove();
         }
 
+        document.getElementById('rcv_stn').value = '';
+        document.getElementById('rcv_usr').value = '';
+        document.getElementById('isu_date').value = '';
+        document.getElementById('isu_lst_des').value = '';
+
         document.getElementById('itm_tbl_bd').innerHTML = '';
+        redraw(items);
 
-        set_item_table(items);
-
-        console.log('isu form resets successfully');
+        //console.log('isu form resets successfully');
     }
     catch (e) {
         console.log('error occurred while resetting the isu form' + e);

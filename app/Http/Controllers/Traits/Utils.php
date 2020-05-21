@@ -44,8 +44,7 @@ trait Utils {
             }
             else if($rcv_item->quantity < 0) {
 
-                return $rcv_item->item_id;
-                break;
+                throw $rcv_item->item_id;
             }
         }
 
@@ -74,6 +73,26 @@ trait Utils {
 
 
     /**
+     * get all available inventory item quantities of a station
+     *
+     * @param $station
+     * @return array
+     */
+    public function get_items_with_codes($station) {
+
+        $inv_items = DB::table('inventory_items')
+            ->join('items', 'inventory_items.item_id', '=', 'items.id')
+            ->select('inventory_items.id', 'item_id', 'name', 'item_code', 'serial_no', 'category_id')
+            ->where('current_station', $station)
+            ->orderBy('item_id')
+            ->get();
+
+        return $this->process_instance_info($inv_items);
+
+    }
+
+
+    /**
      * get all available item quantities of a statiion
      *
      * @param $station
@@ -96,7 +115,6 @@ trait Utils {
      * @return \Illuminate\Support\Collection
      */
     public function get_all_bulk($qd) {
-
         $is_rcv = $qd->tran_type == 'rcv';
         $full_range = $qd->start_date && $qd->end_date;
 
@@ -125,17 +143,16 @@ trait Utils {
         return $items;
     }
 
+
     /**
-     * retrieve all received/issued item quantities
+     * retrieve all received/issued item details
      *
      * @param $qd
-     * @return \Illuminate\Support\Collection
+     * @return array
      */
     public function get_all_inv($qd) {
-
         $is_rcv = $qd->tran_type == 'rcv';
         $full_range = $qd->start_date && $qd->end_date;
-        $to_stock = $is_rcv && $qd->u_stn == 1;
 
         $item_info = DB::table("transactions")
             ->join("transaction_inventory",
@@ -143,11 +160,7 @@ trait Utils {
             ->join("inventory_items",
                 "transaction_inventory.inventory_item_id", "=", "inventory_items.id")
             ->join("items", "inventory_items.item_id", "=", "items.id")
-            ->when( $to_stock, function ($query) use ($qd) {
-                return $query->select('name', DB::raw('count(*) as quantity'));
-            }, function ($query) {
-                return $query->select('item_id', 'items.name', 'item_code', 'serial_no');
-            })
+            ->select('item_id', 'items.name', 'item_code', 'serial_no')
             ->when($is_rcv, function ($query) use ($qd) {
                 return $query->where('transactions.receiving_station', $qd->u_stn);
             }, function ($query) use ($qd) {
@@ -163,19 +176,51 @@ trait Utils {
                         return $query->where('issuing_date', '<=', $qd->end_date);
                     });
             })
-            ->when($to_stock, function ($query) {
-                return $query->groupBy("item_id");
-            }, function ($query) {
-                return $query->orderBy("item_id");
-            })
+            ->orderBy("item_id")
             ->get();
 
-        if($to_stock) {
-            return $item_info;
-        }
-        else {
-            return $this->process_inv_info($item_info);
-        }
+        return $this->process_inv_info($item_info);
+
+    }
+
+
+    /**
+     * retrieve all received/issued inventory item counts
+     *
+     * @param $qd
+     * @return \Illuminate\Support\Collection
+     */
+    public function get_all_inv_count($qd) {
+        $is_rcv = $qd->tran_type == 'rcv';
+        $full_range = $qd->start_date && $qd->end_date;
+
+        $item_info = DB::table("transactions")
+            ->join("transaction_inventory",
+                "transactions.id" , "=", "transaction_inventory.transaction_id")
+            ->join("inventory_items",
+                "transaction_inventory.inventory_item_id", "=", "inventory_items.id")
+            ->join("items", "inventory_items.item_id", "=", "items.id")
+            ->select('name', DB::raw('count(*) as quantity'))
+            ->when($is_rcv, function ($query) use ($qd) {
+                return $query->where('transactions.receiving_station', $qd->u_stn);
+            }, function ($query) use ($qd) {
+                return $query->where('transactions.issuing_station', $qd->u_stn);
+            })
+            ->when($full_range, function ($query) use ($qd) {
+                return $query->whereBetween('issuing_date', [$qd->start_date, $qd->end_date]);
+            }, function ($query) use ($qd) {
+                return $query->when($qd->start_date, function ($query) use ($qd){
+                    return $query->where('issuing_date', '>=', $qd->start_date);
+                })
+                    ->when($qd->end_date, function ($query) use ($qd) {
+                        return $query->where('issuing_date', '<=', $qd->end_date);
+                    });
+            })
+            ->groupBy("item_id")
+            ->get();
+
+        return $item_info;
+
     }
 
 
@@ -186,7 +231,6 @@ trait Utils {
      * @return array
      */
     public function process_inv_info($itm_info) {
-
         $items = [];
 
         if(count($itm_info) <= 0) {
@@ -225,6 +269,70 @@ trait Utils {
                 $item->codes = [];
 
                 $itm_code = new stdClass();
+                $itm_code->code = $record->item_code;
+                $itm_code->serial = $record->serial_no;
+
+                array_push($item->codes, $itm_code);
+
+                $item_id = $record->item_id;
+            }
+        }
+
+        $item->quantity = $qun;
+        array_push($items, $item);
+
+        return $items;
+    }
+
+    /**
+     * organize inventory items data
+     *
+     * @param $itm_info [{item_id, name, item_code, serial_no }, ...]
+     * @return array
+     */
+    public function process_instance_info($itm_info) {
+        $items = [];
+
+        if(count($itm_info) <= 0) {
+            return $items;
+        }
+
+        $item = new stdClass();
+        $item->item_id = $itm_info[0]->item_id;
+        $item->name = $itm_info[0]->name;
+        $item->category_id = $itm_info[0]->category_id;
+        $item->codes = [];
+
+        $item_id = $itm_info[0]->item_id;
+        $qun = 0;
+
+        foreach ($itm_info as $record) {
+
+            if ($record->item_id == $item_id) {
+                $itm_code = new stdClass();
+                $itm_code->id = $record->id;
+                $itm_code->code = $record->item_code;
+                $itm_code->serial = $record->serial_no;
+
+                $qun++;
+
+                array_push($item->codes, $itm_code);
+
+            }
+            else {
+                $item->quantity = $qun;
+                array_push($items, $item);
+
+                $qun = 1;
+
+                $item = new stdClass();
+                $item->item_id = $record->item_id;
+                $item->name = $record->name;
+                $item->category_id = $record->category_id;
+                $item->codes = [];
+
+                $itm_code = new stdClass();
+                $itm_code->id = $record->id;
                 $itm_code->code = $record->item_code;
                 $itm_code->serial = $record->serial_no;
 

@@ -1,8 +1,10 @@
 import { init_add_tab } from './add_tab';
-import { init_isu_tab } from './issue_tab';
+import { init_isu_tab as init_isu_stock } from './issue_tab';
+import { init_isu_tab as init_isu_station } from './issue_tab_general';
 import { init_view_tab } from './view_tab';
 import { init_reports_tab } from './reports_tab';
 import axios from 'axios';
+
 export { tab_selection };
 
 /**
@@ -12,9 +14,8 @@ export { tab_selection };
  * @param {number} tab_no       The index of tab
  */
 function tab_selection(tab_no) {
-
     if( !Number.isInteger(tab_no) || tab_no > 3 || tab_no < 0) {
-        alert('invalid tab selection');
+        console.error('invalid tab selection');
         return;
     }
 
@@ -24,7 +25,7 @@ function tab_selection(tab_no) {
         node.classList.toggle('is-active', false);
     });
 
-    nv_tabs[tab_no].classList.toggle('is-active');
+    document.getElementById(`tab_${tab_no}`).classList.toggle('is-active');
 
     switch (tab_no) {
     case 0:
@@ -34,17 +35,11 @@ function tab_selection(tab_no) {
         get_issue_tab();
         break;
     case 2:
-        get_view_tab().then(response => {
-            document.getElementById('grid_area').innerHTML = response.data.view_tab;
-            init_view_tab(response.data.trans);
-        });
+        get_view_tab();
         break;
     case 3:
         get_reports_tab();
         break;
-    /*case 4:
-        window.location.replace("inventory/new/item");
-        break;*/
     default:
         alert('invalid tab selection');
     }
@@ -56,61 +51,53 @@ function tab_selection(tab_no) {
  * @external insert_row, init_submit inventory_main_js_blade
  */
 function get_add_tab() {
-    const XHR = new XMLHttpRequest();
-
-    XHR.addEventListener('load', function(event) {
-        console.log('response loaded');
-        document.getElementById('grid_area').innerHTML = event.target.response;
-        console.log('Add tab content attached');
-        init_add_tab();
-    });
-    XHR.addEventListener('abort', function(event) {
-        console.log('request aborted' + event.target.responseText);
-    });
-    XHR.addEventListener('error', function(event) {
-        console.log('something went wrong' + event.target.responseText);
-    });
-    XHR.open('GET', `/inventory/tab/add`, true);
-    XHR.setRequestHeader('Content-type', 'text/html; charset=UTF-8');
-    XHR.send();
+    axios.get(`/inventory/tab/add`)
+        .then(response => {
+            document.getElementById('grid_area').innerHTML = response.data;
+            init_add_tab();
+        })
+        .catch(error => {
+            console.error('There has been a problem with your get_add request:', error.message);
+        });
 }
 
 /**
  * xhr to get issue tab
  *
- * @external set_item_table, set_stn_drop   inventory_main_js_blade
  */
 function get_issue_tab() {
-    const XHR = new XMLHttpRequest();
 
-    XHR.addEventListener('load', function(event) {
-        console.log('response loaded');
-        const res_obj = JSON.parse(event.target.response);
-        document.getElementById('grid_area').innerHTML = res_obj.issue_view;
-        init_isu_tab(res_obj.items);
-        console.log('Issue tab content attached');
-    });
-    XHR.addEventListener('abort', function(event) {
-        console.log('request aborted' + event.target.responseText);
-    });
-    XHR.addEventListener('error', function(event) {
-        console.log('something went wrong' + event.target.responseText);
-    });
-    XHR.open('GET', `/inventory/tab/issue?stn=${ window.get_user_station().id }`, true);
-    XHR.setRequestHeader('Content-type', 'text/html; charset=UTF-8');
-    XHR.send();
+    if (window.get_user().station_id === 1) {
+        axios.get(`/inventory/tab/issue/stock`).then(response => {
+            document.getElementById('grid_area').innerHTML = response.data.issue_view;
+            init_isu_stock(response.data.items);
+        }).catch(error => {
+            console.error('There has been a problem with your get_issue request:', error.message);
+        });
+    }
+    else {
+        axios.get(`/inventory/tab/issue/station?stn=${window.get_user_station().id}`).then(response => {
+            document.getElementById('grid_area').innerHTML = response.data.issue_view;
+            init_isu_station(response.data.items);
+        }).catch(error => {
+            console.error('There has been a problem with your get_issue request:', error.message);
+        });
+    }
 }
 
 
 /**
  * xhr to get view tab
  */
-async function get_view_tab() {
-    try {
-        return await axios.get(`/inventory/tab/view?stn=${ window.get_user_station().id }`);
-    } catch (error) {
-        return error;
-    }
+function get_view_tab() {
+    axios.get(`/inventory/tab/view?stn=${ window.get_user_station().id }`)
+        .then(response => {
+            document.getElementById('grid_area').innerHTML = response.data.view_tab;
+            init_view_tab(response.data.trans);
+        })
+        .catch(error =>{
+            console.error('There has been a problem with your get_view request:', error.message);
+        });
 }
 
 /**
@@ -123,6 +110,6 @@ function get_reports_tab() {
             init_reports_tab();
         })
         .catch(error => {
-            console.error('There has been a problem with your request:', error.toJSON());
+            console.error('There has been a problem with your get_reports request:', error.message);
         });
 }
