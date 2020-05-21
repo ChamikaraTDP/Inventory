@@ -59,6 +59,15 @@
             return users;
         }
 
+        /**
+         *
+         * @returns {Object} {
+         *     "id":,
+         *     "name":,
+         *     "user_type":,
+         *     "station_id:"
+         * }
+         */
         function get_user() {
             var user = @json(auth()->user());
             return user;

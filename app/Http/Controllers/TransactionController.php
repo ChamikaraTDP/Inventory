@@ -112,6 +112,7 @@ class TransactionController extends Controller
         $transaction->issued_by = $details->isu_usr;
         $transaction->issuing_station = $details->isu_stn;
         $transaction->transaction_type = "stn_to_stn";
+        $transaction->description = $details->description;
         $transaction->save();
 
         $attach_arr = [];
@@ -158,6 +159,45 @@ class TransactionController extends Controller
 
         if(is_array($avl_items)) {
 
+            return response()->json(array("items" => $avl_items,
+                "msg" => "transaction created for issue and items attached successfully", "t_id" => $transaction->id));
+        }
+        else {
+            return response('item ' . $avl_items . ' has a negative quantity!', 500);
+        }
+    }
+
+
+    /**
+     * handle queries for saving issue request &
+     *   send back updated item data
+     *
+     * @param Request $request issue details
+     * @return Response
+     */
+    public function station_issue(Request $request) {
+        $issue = json_decode($request->input('issue'));
+
+        $itm_ids = $issue->items->ids;
+        $details = $issue->details;
+
+        $transaction = new Transaction;
+        $transaction->issuing_date = $details->isu_date;
+        $transaction->received_by = $details->rcv_usr;
+        $transaction->receiving_station = $details->rcv_stn;
+        $transaction->issued_by = $details->isu_usr;
+        $transaction->issuing_station = $details->isu_stn;
+        $transaction->transaction_type = "stn_to_stn";
+        $transaction->description = $details->description;
+        $transaction->save();
+
+        $transaction->inventory_items()->attach($itm_ids);
+
+        InventoryItem::whereIn('id', $itm_ids)->update(['current_station' => $details->rcv_stn]);
+
+        $avl_items = $this->get_items_with_codes($details->isu_stn);
+
+        if(is_array($avl_items)) {
             return response()->json(array("items" => $avl_items,
                 "msg" => "transaction created for issue and items attached successfully", "t_id" => $transaction->id));
         }

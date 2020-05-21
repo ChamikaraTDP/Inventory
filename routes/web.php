@@ -26,8 +26,11 @@ Route::get('/inventory', 'HomeController@index')->name('inventory');
 // Add tab
 Route::view('/inventory/tab/add', '/tabs/add')->name('tab_add');
 
-// Issue tab
-Route::get('/inventory/tab/issue', 'TabsController@issue')->name('tab_issue');
+// Issue tab for stock
+Route::get('/inventory/tab/issue/stock', 'TabsController@stk_issue')->name('tab_stk_issue');
+
+// Issue tab for other stations
+Route::get('/inventory/tab/issue/station', 'TabsController@stn_issue')->name('tab_stn_issue');
 
 // View tab
 Route::get('/inventory/tab/view', 'TabsController@view')->name('tab_view');
@@ -64,6 +67,9 @@ Route::post('/inventory/transaction/stock/put', 'TransactionController@put')->na
 
 // Issue items from stock
 Route::post('/inventory/transaction/stock/issue', 'TransactionController@stock_issue')->name('transaction_stock_issue');
+
+// Issue items from other stations
+Route::post('/inventory/transaction/station/issue', 'TransactionController@station_issue')->name('transaction_station_issue');
 
 // Generate reports specific to the stock
 Route::post('/inventory/report/stock', 'ReportsController@stock')->name('reports_stock');

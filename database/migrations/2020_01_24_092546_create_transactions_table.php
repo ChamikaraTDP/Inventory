@@ -24,7 +24,7 @@ class CreateTransactionsTable extends Migration
             $table->string('receipt_no')->nullable();
             $table->string('supplier')->nullable();
             $table->date('accepted_date')->nullable();
-            $table->string('description')->nullable();
+            $table->text('description')->nullable();
             $table->timestamps();
 
             $table->foreign('issued_by')->references('id')->on('users');

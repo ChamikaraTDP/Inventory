@@ -37,7 +37,7 @@ function make_report(rep_app) {
         u_stn: window.get_user_station().id,
     };
 
-    let url = window.get_user().user_type === 'stock' ? 'inventory/report/stock' : 'inventory/report';
+    let url = window.get_user().station_id === 1 ? 'inventory/report/stock' : 'inventory/report';
 
     axios.post(url, query_obj)
         .then(response =>  {

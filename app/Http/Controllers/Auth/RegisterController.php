@@ -65,17 +65,10 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
-        if($data['branch'] == 1 ) {
-            $data['user_type'] = 'stock';
-        }
-        else {
-            $data['user_type'] = 'user';
-        }
-
         return User::create([
             'name' => $data['name'],
             'username' => $data['username'],
-            'user_type' => $data['user_type'],
+            'user_type' => 'user',
             'station_id' => $data['branch'],
             'password' => Hash::make($data['password']),
         ]);

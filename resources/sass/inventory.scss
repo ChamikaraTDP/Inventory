@@ -64,6 +64,11 @@ body {
     max-width: 10rem;
 }
 
+// max width some long :)
+.max_width_long {
+    max-width: 16rem;
+}
+
 
 // form input design with some padding and hover action
 .form_input {
@@ -239,4 +244,22 @@ body {
 // reports table strips
 .strip_div > div:nth-child(even) {
     background-color: white;
+}
+
+
+.text_ellipsis {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+
+.min_width_0 {
+    min-width: 0;
+}
+
+
+.max_width_100 {
+    max-width: 100%;
 }

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Traits;
 
 use Illuminate\Support\Facades\DB;
-use phpDocumentor\Reflection\Types\Collection;
 use stdClass;
 
 trait Utils {
@@ -45,8 +44,7 @@ trait Utils {
             }
             else if($rcv_item->quantity < 0) {
 
-                return $rcv_item->item_id;
-                break;
+                throw $rcv_item->item_id;
             }
         }
 
@@ -70,6 +68,26 @@ trait Utils {
             ->get();
 
         return $inv_items;
+
+    }
+
+
+    /**
+     * get all available inventory item quantities of a station
+     *
+     * @param $station
+     * @return array
+     */
+    public function get_items_with_codes($station) {
+
+        $inv_items = DB::table('inventory_items')
+            ->join('items', 'inventory_items.item_id', '=', 'items.id')
+            ->select('inventory_items.id', 'item_id', 'name', 'item_code', 'serial_no', 'category_id')
+            ->where('current_station', $station)
+            ->orderBy('item_id')
+            ->get();
+
+        return $this->process_instance_info($inv_items);
 
     }
 
@@ -213,7 +231,6 @@ trait Utils {
      * @return array
      */
     public function process_inv_info($itm_info) {
-
         $items = [];
 
         if(count($itm_info) <= 0) {
@@ -252,6 +269,70 @@ trait Utils {
                 $item->codes = [];
 
                 $itm_code = new stdClass();
+                $itm_code->code = $record->item_code;
+                $itm_code->serial = $record->serial_no;
+
+                array_push($item->codes, $itm_code);
+
+                $item_id = $record->item_id;
+            }
+        }
+
+        $item->quantity = $qun;
+        array_push($items, $item);
+
+        return $items;
+    }
+
+    /**
+     * organize inventory items data
+     *
+     * @param $itm_info [{item_id, name, item_code, serial_no }, ...]
+     * @return array
+     */
+    public function process_instance_info($itm_info) {
+        $items = [];
+
+        if(count($itm_info) <= 0) {
+            return $items;
+        }
+
+        $item = new stdClass();
+        $item->item_id = $itm_info[0]->item_id;
+        $item->name = $itm_info[0]->name;
+        $item->category_id = $itm_info[0]->category_id;
+        $item->codes = [];
+
+        $item_id = $itm_info[0]->item_id;
+        $qun = 0;
+
+        foreach ($itm_info as $record) {
+
+            if ($record->item_id == $item_id) {
+                $itm_code = new stdClass();
+                $itm_code->id = $record->id;
+                $itm_code->code = $record->item_code;
+                $itm_code->serial = $record->serial_no;
+
+                $qun++;
+
+                array_push($item->codes, $itm_code);
+
+            }
+            else {
+                $item->quantity = $qun;
+                array_push($items, $item);
+
+                $qun = 1;
+
+                $item = new stdClass();
+                $item->item_id = $record->item_id;
+                $item->name = $record->name;
+                $item->category_id = $record->category_id;
+                $item->codes = [];
+
+                $itm_code = new stdClass();
+                $itm_code->id = $record->id;
                 $itm_code->code = $record->item_code;
                 $itm_code->serial = $record->serial_no;
 

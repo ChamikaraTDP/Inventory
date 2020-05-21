@@ -1,5 +1,6 @@
 import { init_add_tab } from './add_tab';
-import { init_isu_tab } from './issue_tab';
+import { init_isu_tab as init_isu_stock } from './issue_tab';
+import { init_isu_tab as init_isu_station } from './issue_tab_general';
 import { init_view_tab } from './view_tab';
 import { init_reports_tab } from './reports_tab';
 import axios from 'axios';
@@ -13,7 +14,6 @@ export { tab_selection };
  * @param {number} tab_no       The index of tab
  */
 function tab_selection(tab_no) {
-
     if( !Number.isInteger(tab_no) || tab_no > 3 || tab_no < 0) {
         console.error('invalid tab selection');
         return;
@@ -55,7 +55,8 @@ function get_add_tab() {
         .then(response => {
             document.getElementById('grid_area').innerHTML = response.data;
             init_add_tab();
-        }).catch(error => {
+        })
+        .catch(error => {
             console.error('There has been a problem with your get_add request:', error.message);
         });
 }
@@ -65,14 +66,23 @@ function get_add_tab() {
  *
  */
 function get_issue_tab() {
-    axios.get(`/inventory/tab/issue?stn=${ window.get_user_station().id }`)
-        .then(response => {
+
+    if (window.get_user().station_id === 1) {
+        axios.get(`/inventory/tab/issue/stock`).then(response => {
             document.getElementById('grid_area').innerHTML = response.data.issue_view;
-            init_isu_tab(response.data.items);
-        })
-        .catch(error => {
+            init_isu_stock(response.data.items);
+        }).catch(error => {
             console.error('There has been a problem with your get_issue request:', error.message);
         });
+    }
+    else {
+        axios.get(`/inventory/tab/issue/station?stn=${window.get_user_station().id}`).then(response => {
+            document.getElementById('grid_area').innerHTML = response.data.issue_view;
+            init_isu_station(response.data.items);
+        }).catch(error => {
+            console.error('There has been a problem with your get_issue request:', error.message);
+        });
+    }
 }
 
 
