@@ -36,7 +36,7 @@
             <input id="isu_date"  class="form_input input_float" type="date" name="isu_date" required/>
         </div>
         <div class="padding_all_4 auto_overflow clearfix">
-            <label for="isu_lst_des" class="label_float width_10">Description</label>
+            <label for="isu_lst_des" class="label_float width_10">Description :</label>
             <textarea id="isu_lst_des" class="textarea" name="description" rows="1"></textarea>
         </div>
         <div class="level is-mobile">
@@ -53,5 +53,4 @@
     </div>
 </div>
 
-<div id="isu_mdl" class="model">
-</div>
+<div id="isu_mdl" class="model"></div>

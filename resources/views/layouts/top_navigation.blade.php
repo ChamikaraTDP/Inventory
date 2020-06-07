@@ -35,6 +35,12 @@
 
     <div class="container" id="grid_area"></div>
 
+    <div id="reset_mdl" class="model">
+        <div id="reset_mdl_cont" class="mdl_cont">
+            <p>Someone changed the stocks, page resets...</p>
+        </div>
+    </div>
+
 @endsection
 
 @section('js_area')
@@ -90,7 +96,7 @@
     <script>
         window.addEventListener('click', function(event) {
             if(!event.target.matches('.navbar-link')){
-                const drop_down = document.getElementById('nav_drops');
+                var drop_down = document.getElementById('nav_drops');
                 drop_down.classList.toggle('is-active', false);
             }
         });
@@ -98,9 +104,24 @@
         window.addEventListener('load', function() {
             tab_selection(1);
 
-            Ech0.channel('inventory')
-                .listen('MyMessage', (event) => {
-                    console.log(event.message);
+            Ech0.private(`station-${ get_user().station_id }`)
+                .listen('StockChanged', (event) => {
+                    if(document.getElementById('tab_1').classList.contains('is-active')) {
+                        console.log(`stock changed by ${ event.user.name }`);
+                        if (event.user.id === get_user().id) {
+                            tab_selection(1);
+                        } else {
+                            var rst_mdl = document.getElementById('reset_mdl');
+
+                            rst_mdl.style.display = 'block';
+
+                            rst_mdl.addEventListener('click', function() {
+                                rst_mdl.style.display = 'none';
+                            });
+
+                            tab_selection(1);
+                        }
+                    }
                 });
         });
     </script>

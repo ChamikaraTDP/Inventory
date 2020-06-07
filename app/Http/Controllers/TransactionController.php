@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\StockChanged;
 use App\Http\Controllers\Traits\Utils;
 use App\InventoryItem;
 use App\Transaction;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use stdClass;
 
@@ -103,6 +105,9 @@ class TransactionController extends Controller
      */
     public function stock_issue(Request $request) {
         $issue = json_decode($request->input('issue'));
+//        $issue = json_decode($request);
+//          $issue = json_decode();
+
 
         $itm_bulk = $issue->items->bulk;
         $itm_inv = $issue->items->inv;
@@ -189,6 +194,8 @@ class TransactionController extends Controller
         try {
             $avl_items = $this->get_items($details->isu_stn);
 
+            broadcast(new StockChanged(Auth::user()))->toOthers();
+
             return response()->json(array("items" => $avl_items,
                 "msg" => "transaction created for issue and items attached successfully", "t_id" => $transaction->id));
         }
@@ -229,11 +236,12 @@ class TransactionController extends Controller
         $transaction->issuing_station = $details->isu_stn;
         $transaction->transaction_type = "stn_to_stn";
         $transaction->description = $details->description;
-        $transaction->save();
 
-        $transaction->inventory_items()->attach($itm_ids);
-
-        InventoryItem::whereIn('id', $itm_ids)->update(['current_station' => $details->rcv_stn]);
+        DB::transaction(function () use ($transaction, $itm_ids, $details) {
+            $transaction->save();
+            $transaction->inventory_items()->attach($itm_ids);
+            InventoryItem::whereIn('id', $itm_ids)->update(['current_station' => $details->rcv_stn]);
+        });
 
         $avl_items = $this->get_items_with_codes($details->isu_stn);
 
