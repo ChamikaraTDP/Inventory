@@ -13,6 +13,7 @@ export {
     reset_form
 };
 
+//TODO: check availability of item codes and serials
 
 /**
  * Initialize the issue tab
@@ -1103,8 +1104,8 @@ function submit_issue(isu_mdl, isu_list ) {
             display_success(isu_mdl, pdf_list);
         }
         else {
-            console.log('Error occurred while submitting the data!');
-            throw Error('submission not successful!');
+            console.error('Error occurred while submitting data!');
+            display_error(isu_mdl);
         }
     });
     XHR.addEventListener('abort', function(event) {
@@ -1165,4 +1166,15 @@ function display_success(isu_mdl, pdf_list) {
         create_pdf(pdf_list);
     });
 
+}
+
+function display_error(isu_mdl) {
+    const mdl_cont = isu_mdl.querySelector('#isu_mdl_cont');
+
+    mdl_cont.innerHTML = `<span id="ad_mdl_close" class="mdl_close">&times;</span>
+        <p>Ooops! An error occurred :(</p>`;
+
+    mdl_cont.querySelector('#ad_mdl_close').addEventListener('click', function() {
+        isu_mdl.style.display = 'none';
+    });
 }

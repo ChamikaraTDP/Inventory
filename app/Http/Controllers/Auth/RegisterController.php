@@ -51,9 +51,9 @@ class RegisterController extends Controller
     {
         return Validator::make($data, [
             'name' => ['required', 'string', 'max:255'],
-            'username' => ['required', 'string', 'max:255'],
-            'branch' => ['required', 'numeric'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'username' => ['required', 'string', 'max:20', 'min:4', 'unique:users,username' ],
+            'branch' => ['required', 'numeric', 'max:160', 'min:1'],
+            'password' => ['required', 'string', 'min:8', 'max:255', 'confirmed', 'regex:/^(?=.*[A-Z])(?=.*[a-z])(?=.*[\d])[A-Za-z\d]{8,}$/' ],
         ]);
     }
 
@@ -61,16 +61,18 @@ class RegisterController extends Controller
      * Create a new user instance after a valid registration.
      *
      * @param  array  $data
-     * @return \App\User
+     * @return User
      */
     protected function create(array $data)
     {
-        return User::create([
-            'name' => $data['name'],
-            'username' => $data['username'],
-            'user_type' => 'user',
-            'station_id' => $data['branch'],
-            'password' => Hash::make($data['password']),
-        ]);
+        $user = new User;
+        $user->name = $data['name'];
+        $user->username = $data['username'];
+        $user->user_type = 'user';
+        $user->station_id = $data['branch'];
+        $user->password = Hash::make($data['password']);
+        $user->save();
+
+        return $user;
     }
 }

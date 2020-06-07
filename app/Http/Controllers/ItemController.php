@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Category;
+use App\Events\StockChanged;
 use App\Item;
 use Illuminate\Http\Request;
 
@@ -25,6 +26,7 @@ class ItemController extends Controller
         return view('/new_item', compact('categories'));
     }
 
+
     public function create(Request $request){
         $item = new Item;
 
@@ -33,6 +35,7 @@ class ItemController extends Controller
         $item->type = $request->type;
 
         $item->save();
+        //event(new StockChanged($item));
 
     }
 }

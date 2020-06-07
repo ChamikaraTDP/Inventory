@@ -16,7 +16,14 @@
                             <label class="label" for="name">{{ __('Name') }}</label>
 
                             <div class="control">
-                                <input id="name" type="text" class="input @error('name') is-danger @enderror" name="name" value="{{ old('name') }}" required autocomplete="name" autofocus>
+                                <input id="name" type="text"
+                                       class="input @error('name') is-danger @enderror"
+                                       name="name" value="{{ old('name') }}"
+                                       maxlength="255"
+                                       autocomplete="name"
+                                       pattern="^(?=.*[A-Za-z]).*$"
+                                       title="should contain some letters"
+                                       required autofocus>
 
                                 @error('name')
                                 <span class="help is-danger" role="alert">
@@ -35,7 +42,10 @@
                                         <option value="">Select Station</option>
 
                                         @foreach(\App\Station::all() as $station)
-                                            <option value="{{ $station->id }}" {{ old('branch') == $station->id ? 'selected' : '' }}>{{ $station->name }}</option>
+                                            <option value="{{ $station->id }}"
+                                                {{ old('branch') == $station->id ? 'selected' : '' }}>
+                                                {{ $station->name }}
+                                            </option>
                                         @endforeach
 
                                     </select>
@@ -47,7 +57,16 @@
                             <label for="username" class="label">{{ __('Username') }}</label>
 
                             <div class="control">
-                                <input id="username" type="text" class="input @error('username') is-danger @enderror" name="username" value="{{ old('username') }}" required autocomplete="username" autofocus>
+                                <input id="username"
+                                       type="text"
+                                       class="input @error('username') is-danger @enderror"
+                                       name="username" value="{{ old('username') }}"
+                                       pattern="[\w]+"
+                                       title="may contain letters and numbers,
+                                            Minimum 4 characters, Maximum 20 characters."
+                                       autocomplete="username"
+                                       minlength="4" maxlength="20"
+                                       required autofocus>
 
                                 @error('username')
                                 <span class="help is-danger" role="alert">
@@ -61,7 +80,16 @@
                             <label for="password" class="label">{{ __('Password') }}</label>
 
                             <div class="control">
-                                <input id="password" type="password" class="input @error('password') is-danger @enderror" name="password" required autocomplete="new-password">
+                                <input id="password" type="password"
+                                       class="input @error('password') is-danger @enderror"
+                                       name="password"
+                                       minlength="8"
+                                       maxlength="255"
+                                       autocomplete="new-password"
+                                       pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*[\d])[A-Za-z\d]{8,}$"
+                                       title="Should contain minimum 8 characters,
+                                            Uppercase and Lowercase characters and numbers."
+                                       required>
 
                                 @error('password')
                                 <span class="help is-danger" role="alert">
@@ -75,7 +103,17 @@
                             <label for="password-confirm" class="label">{{ __('Confirm Password') }}</label>
 
                             <div class="control">
-                                <input id="password-confirm" type="password" class="input" name="password_confirmation" required autocomplete="new-password">
+                                <input id="password-confirm"
+                                       type="password"
+                                       class="input"
+                                       name="password_confirmation"
+                                       autocomplete="new-password"
+                                       minlength="8"
+                                       maxlength="255"
+                                       pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*[\d])[A-Za-z\d]{8,}$"
+                                       title="Should contain minimum 8 characters,
+                                        Uppercase and Lowercase characters and numbers."
+                                       required>
                             </div>
                         </div>
 

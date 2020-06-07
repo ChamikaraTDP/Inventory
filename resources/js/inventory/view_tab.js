@@ -54,7 +54,7 @@ function toggle_selection(tabs, selected) {
 
 
 function fetch_all(view_app) {
-    axios.get(`/inventory/tab/view/all?stn=${ view_app.u_stn }`)
+    axios.get(`/inventory/tab/view/all`)
         .then(response => {
             view_app.trans = response.data;
         })
@@ -65,7 +65,7 @@ function fetch_all(view_app) {
 
 
 function fetch_receipts(view_app) {
-    fetch(`/inventory/tab/view/receipts?stn=${ view_app.u_stn }`)
+    fetch(`/inventory/tab/view/receipts`)
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
@@ -82,7 +82,7 @@ function fetch_receipts(view_app) {
 
 
 function fetch_issues(view_app) {
-    fetch(`/inventory/tab/view/issues?stn=${ view_app.u_stn }`)
+    fetch(`/inventory/tab/view/issues`)
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Traits\Utils;
 use App\InventoryItem;
 use App\Transaction;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use stdClass;
@@ -91,12 +92,14 @@ class TransactionController extends Controller
     }
 
 
+    // TODO:Manage concurrency
     /**
      * handle queries for saving issue request &
      *   send back updated item data
      *
      * @param Request $request issue details
      * @return Response
+     * @throws Exception
      */
     public function stock_issue(Request $request) {
         $issue = json_decode($request->input('issue'));
@@ -113,29 +116,51 @@ class TransactionController extends Controller
         $transaction->issuing_station = $details->isu_stn;
         $transaction->transaction_type = "stn_to_stn";
         $transaction->description = $details->description;
-        $transaction->save();
+        //$transaction->save();
 
         $attach_arr = [];
         $itm_count = count($itm_bulk);
 
         if($itm_count > 0) {
+            $avl_bulk = $this->get_bulk_items($details->isu_stn);
+
             for ($i = 0; $i < $itm_count; $i++) {
-                $attach_arr[$itm_bulk[$i]->item_id] = array('quantity' => $itm_bulk[$i]->quantity);
+                $itm_id = $itm_bulk[$i]->item_id;
+                $isu_qun = $itm_bulk[$i]->quantity;
+
+                $stk_itm = $avl_bulk->firstWhere('item_id', $itm_id);
+
+                if( is_null($stk_itm) || $stk_itm->quantity < $isu_qun ) {
+                    throw new Exception('Invalid issue quantity for item '. $itm_id);
+                }
+
+                $attach_arr[$itm_id] = array('quantity' => $isu_qun);
             }
 
-            $transaction->bulk_items()->attach($attach_arr);
+//            $transaction->bulk_items()->attach($attach_arr);
         }
 
         $inv_count = count($itm_inv);
 
+        $itm_ids = [];
+
         if($inv_count > 0) {
-            $itm_ids = [];
+            $stk_itm = null;
+            $avl_inv = $this->get_inv_items($details->isu_stn);
 
             foreach ($itm_inv as $itm) {
+                $itm_id = $itm->item_id;
                 $itm_count = intval($itm->quantity);
+
+                $stk_itm = $avl_inv->firstWhere('item_id', $itm_id);
+
+                if( is_null($stk_itm) || $stk_itm->quantity < $itm_count ){
+                    throw new Exception('Invalid issue quantity for item '.$itm_id);
+                }
+
                 $db_items = InventoryItem::where(
                     [
-                        ['item_id', '=', $itm->item_id],
+                        ['item_id', '=', $itm_id],
                         ['current_station', '=', $details->isu_stn],
                     ])
                     ->take($itm_count)
@@ -152,22 +177,37 @@ class TransactionController extends Controller
                 }
             }
 
-            $transaction->inventory_items()->attach($itm_ids);
+//            $transaction->inventory_items()->attach($itm_ids);
         }
 
-        $avl_items = $this->get_items($details->isu_stn);
+        DB::transaction(function () use ($itm_ids, $attach_arr, $transaction) {
+            $transaction->save();
+            $transaction->bulk_items()->attach($attach_arr);
+            $transaction->inventory_items()->attach($itm_ids);
+        });
 
-        if(is_array($avl_items)) {
+        try {
+            $avl_items = $this->get_items($details->isu_stn);
+
+            return response()->json(array("items" => $avl_items,
+                "msg" => "transaction created for issue and items attached successfully", "t_id" => $transaction->id));
+        }
+        catch (Exception $exc) {
+            return response($exc->getMessage(), 500);
+        }
+
+        /*if(is_array($avl_items)) {
 
             return response()->json(array("items" => $avl_items,
                 "msg" => "transaction created for issue and items attached successfully", "t_id" => $transaction->id));
         }
         else {
             return response('item ' . $avl_items . ' has a negative quantity!', 500);
-        }
+        }*/
     }
 
 
+    // TODO:Validate item quantities
     /**
      * handle queries for saving issue request &
      *   send back updated item data
@@ -213,10 +253,10 @@ class TransactionController extends Controller
      * @param Request $request
      * @return array
      */
-    public function receipts(Request $request) {
-        //$station = auth()->user()->station_id;
+    public function receipts() {
+        $station = auth()->user()->station_id;
 
-        $trans = DB::select('select * from trans_info where rcv_stn_id = ? order by id desc', [$request->stn]);
+        $trans = DB::select('select * from trans_info where rcv_stn_id = ? order by id desc', [$station]);
 
         return $trans;
     }
@@ -227,10 +267,10 @@ class TransactionController extends Controller
      *
      * @return array
      */
-    public function issues(Request $request) {
-        //$station = auth()->user()->station_id;
+    public function issues() {
+        $station = auth()->user()->station_id;
 
-        $trans = DB::select('select * from trans_info where isu_stn_id = ? order by id desc', [$request->stn]);
+        $trans = DB::select('select * from trans_info where isu_stn_id = ? order by id desc', [$station]);
 
         return $trans;
     }
@@ -241,10 +281,11 @@ class TransactionController extends Controller
      *
      * @return array
      */
-    public function all(Request $request) {
+    public function all() {
+        $station = auth()->user()->station_id;
 
         $trans = DB::select('select * from trans_info where isu_stn_id = ? or rcv_stn_id = ? order by id desc',
-            [$request->stn, $request->stn]);
+            [$station, $station]);
 
         return response($trans);
     }
@@ -261,14 +302,12 @@ class TransactionController extends Controller
     public function all_items($id) {
         $items = new stdClass();
 
-        /** @noinspection SqlDialectInspection */
         $items->bulk = DB::select('select I.name, B.quantity 
                             from (transaction_bulk as B 
                                  join items as I on B.item_id = I.id)
                             where B.transaction_id = ?',
                             [ $id ]);
 
-        /** @noinspection SqlDialectInspection */
         $itm_info = DB::select('select I.item_id, C.name, I.item_code, I.serial_no 
                             from (transaction_inventory as T 
                                 join inventory_items as I on T.inventory_item_id = I.id

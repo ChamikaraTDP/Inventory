@@ -1,5 +1,6 @@
 import { get_parent, make_list } from './helpers/utils';
 import jsPDF from 'jspdf';
+
 export { init_add_tab, display_model, create_pdf };
 
 
@@ -16,17 +17,16 @@ function init_add_tab() {
 /**
  * insert add form rows
  *
- * @callers add_btn, reset_form(), get_add_tab() inventory_main.js
  * @param {node} current add_btn node that called insert_row
  * @use make_list(), make_item_list()
  */
 function insert_row(current) {
     const table = document.getElementById('tbl_body');
-    if(!table){
+    if(!table) {
         throw new Error(' no table body exists with id=tbl_body ');
     }
     const row_count = table.rows.length;
-    if (row_count > 0 && !current){
+    if (row_count > 0 && !current) {
         throw new Error(' no calling add button passed! ');
     }
     const row = table.insertRow(-1),
@@ -39,7 +39,10 @@ function insert_row(current) {
     cell1.setAttribute('class', 'ad_cat_td');
     cell1.innerHTML = `
         <div class="select">
-            <select class='ad_cat_drop' name='category'>${ make_list(window.get_categories()) }</select>
+            <select class='ad_cat_drop' name='category' required>
+                <option value="">Select Category</option>
+                ${ make_list(window.get_categories()) }
+            </select>
         </div>`;
 
     cell1.querySelector("select[name='category']").addEventListener('change', function(){
@@ -48,7 +51,7 @@ function insert_row(current) {
 
     cell2.innerHTML = `
         <div class="select">
-            <select class="ad_itm_drop" name='item'></select>
+            <select class="ad_itm_drop" name='item' required></select>
         </div>`;
 
     cell2.setAttribute('class', 'ad_itm_td');
@@ -162,7 +165,7 @@ function insert_row(current) {
                 throw new Error(' items must be a json object ');
             }
 
-            let list = ``,
+            let list = `<option value="">Select Item</option>`,
                 item = {};
             for (item of items) {
                 list += `<option value='{ "id": ${item.id}, "type": ${item.type} }'>${item.name}`;
@@ -189,6 +192,13 @@ function take_on_submit() {
 
 
 function process_data(form) {
+    const supplier = form.querySelector('#ad_fm_sup').value.trim(),
+        note_no = form.querySelector('#ad_fm_isn').value,
+        desc = form.querySelector('#ad_fm_des').value;
+
+
+
+
     const isu_list = {
         'items': [],
 
@@ -196,13 +206,11 @@ function process_data(form) {
             'heading': `Stock Note`,
             'top_left': [
                 `Date : ${ form.querySelector('#ad_fm_date').value }`,
-                `Received from : ${ form.querySelector('#ad_fm_sup').value }`,
-                `Issue Note no : ${ form.querySelector('#ad_fm_isn').value }`
+                `Received from : ${ supplier }`,
+                `Issue Note no : ${ note_no }`
             ],
             'bottom_note': `Above items are recorded in the inventory.`,
-            'description': `Description : ${ 
-                form.querySelector('#ad_fm_des').value ? form.querySelector('#ad_fm_des').value :
-                    'not provided' }`,
+            'description': `Description : ${ desc ? desc : 'not provided' }`,
             'sign_note': `(Stock Officer)`,
             'sign_usr_name' : window.get_user().name,
             'btn_text' : `Confirm`,
@@ -230,7 +238,6 @@ function process_data(form) {
     }
 
     return isu_list;
-
 }
 
 

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Traits;
 
+use Exception;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use stdClass;
 
@@ -11,7 +13,8 @@ trait Utils {
      * get all available bulk item quantities of a station
      *
      * @param $station
-     * @return array
+     * @return Collection
+     * @throws Exception
      */
     public function get_bulk_items($station){
 
@@ -31,7 +34,7 @@ trait Utils {
             ->groupBy('item_id')
             ->get();
 
-        $avl_items = [];
+        $avl_items = collect([]);
 
         foreach ($rcv_items as $rcv_item) {
             $isu_itm =  $isu_items->firstWhere('item_id', $rcv_item->item_id);
@@ -40,11 +43,10 @@ trait Utils {
                 $rcv_item->quantity = $rcv_item->quantity - $isu_itm->quantity;
             }
             if($rcv_item->quantity > 0) {
-                array_push($avl_items, $rcv_item);
+                $avl_items->push($rcv_item);
             }
             else if($rcv_item->quantity < 0) {
-
-                throw $rcv_item->item_id;
+                throw new Exception('Item '.$rcv_item->item_id.' has a negative quantity!');
             }
         }
 
@@ -96,13 +98,14 @@ trait Utils {
      * get all available item quantities of a statiion
      *
      * @param $station
-     * @return array
+     * @return Collection
+     * @throws Exception
      */
     public function get_items($station){
         $bulk_items = $this->get_bulk_items($station);
         $inv_items = $this->get_inv_items($station);
 
-        $avl_items = array_merge($bulk_items, $inv_items->toArray());
+        $avl_items = $bulk_items->merge($inv_items);
 
         return $avl_items;
     }
@@ -255,7 +258,6 @@ trait Utils {
                 $qun++;
 
                 array_push($item->codes, $itm_code);
-
             }
             else {
                 $item->quantity = $qun;
