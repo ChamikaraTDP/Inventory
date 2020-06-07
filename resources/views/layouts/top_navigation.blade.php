@@ -83,13 +83,25 @@
              return '{{ csrf_token() }}';
         }
 
-        window.onclick = function(event) {
+    </script>
+
+    <script src="{{ asset('js/inventory.js') }}"></script>
+
+    <script>
+        window.addEventListener('click', function(event) {
             if(!event.target.matches('.navbar-link')){
                 const drop_down = document.getElementById('nav_drops');
                 drop_down.classList.toggle('is-active', false);
             }
-        };
-    </script>
+        });
 
-    <script src="{{ asset('js/inventory.js') }}"></script>
+        window.addEventListener('load', function() {
+            tab_selection(1);
+
+            Ech0.channel('inventory')
+                .listen('MyMessage', (event) => {
+                    console.log(event.message);
+                });
+        });
+    </script>
 @endsection

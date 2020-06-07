@@ -2,29 +2,34 @@
     <div style="padding: 2rem" class="column is-10 box auto_overflow">
         <form id="ad_itm_form">
 
-            <ol class="padding_left_20">
-                <li class="padding_all_4">
+            <div class="padding_left_20">
+                <div class="padding_bottom_8">
                     <div class="auto_overflow">
                         <label for="ad_fm_date" class="label_float width_8">Date</label>
                         <span class="float_left padding_right_5">:</span>
                         <input id="ad_fm_date" class="input_float form_input" type="date" name="date" required/>
                     </div>
-                </li>
-                <li class="padding_all_4">
+                </div>
+                <div class="padding_bottom_8">
                     <div class="auto_overflow">
                         <label for="ad_fm_sup" class="label_float width_8">Received From</label>
                         <span class="float_left padding_right_5">:</span>
-                        <input id="ad_fm_sup" class="input_float form_input" type="text" name="supplier" required/>
+                        <input id="ad_fm_sup" class="input_float form_input" type="text"
+                               name="supplier" maxlength="100" pattern=".*[A-Za-z]+.*"
+                               title="should contain letters" required/>
                     </div>
-                </li>
-                <li class="padding_all_4">
+                </div>
+                <div class="padding_bottom_8">
                     <div class="auto_overflow">
                         <label for="ad_fm_isn" class="label_float width_8">Issue Note No</label>
                         <span class="float_left padding_right_5">:</span>
-                        <input id="ad_fm_isn" class="input_float form_input" type="text" name="issue_no" required/>
+                        <input id="ad_fm_isn" class="input_float form_input" type="text"
+                               name="issue_no" maxlength="100" pattern="[\w\s]*\w+[\w\s]*"
+                               title="should contain letters and numbers" required/>
+                        {{--<span style="float: left" class="help is-danger">Issue Note No may contain letters and numbers</span>--}}
                     </div>
-                </li>
-            </ol>
+                </div>
+            </div>
 
 
             <table id="item_tbl" class="table is-fullwidth">

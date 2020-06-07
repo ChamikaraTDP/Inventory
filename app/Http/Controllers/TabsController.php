@@ -19,21 +19,15 @@ class TabsController extends Controller
      * @return \Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
     public function stk_issue() {
-
-        $avl_items = $this->get_items(1);
-
-        if(is_array($avl_items)) {
             try {
+                $avl_items = $this->get_items(1);
                 $issue_view = view('/tabs/issue')->render();
-                return response()->json(array("issue_view" => $issue_view, "items" => $avl_items));
+
+                return response()->json(["issue_view" => $issue_view, "items" => $avl_items]);
             }
-            catch (Throwable $e) {
-                return response(' error occurred during view rendering ', 500);
+            catch (Throwable $exc) {
+                return response($exc->getMessage(), 500);
             }
-        }
-        else {
-            return response(' error occurred when loading the items ', 500);
-        }
     }
 
 

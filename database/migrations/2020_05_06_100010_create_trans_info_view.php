@@ -12,7 +12,7 @@ class CreateTransInfoView extends Migration
      */
     public function up()
     {
-        DB::statement("create view 
+        DB::statement("create view
             trans_info(id, isu_date, isu_stn_id, isu_stn, isu_usr, rcv_stn_id, rcv_stn, rcv_usr, type, rcp_no, sup, des)
              as select T.id, T.issuing_date, T.issuing_station, Si.name, Ui.name, T.receiving_station, Sr.name, Ur.name, T.transaction_type, T.receipt_no, T.supplier, T.description
               from (transactions as T left outer join stations as Si on T.issuing_station = Si.id
