@@ -106,20 +106,21 @@
 
             Ech0.private(`station-${ get_user().station_id }`)
                 .listen('StockChanged', (event) => {
-                    //console.log(`stock changed by ${ event.user.name }`);
-                    if(event.user.id === get_user().id) {
-                        tab_selection(1);
-                    }
-                    else {
-                        var rst_mdl = document.getElementById('reset_mdl');
+                    if(document.getElementById('tab_1').classList.contains('is-active')) {
+                        console.log(`stock changed by ${ event.user.name }`);
+                        if (event.user.id === get_user().id) {
+                            tab_selection(1);
+                        } else {
+                            var rst_mdl = document.getElementById('reset_mdl');
 
-                        rst_mdl.style.display = 'block';
+                            rst_mdl.style.display = 'block';
 
-                        rst_mdl.addEventListener('click', function() {
-                            rst_mdl.style.display = 'none';
-                        });
+                            rst_mdl.addEventListener('click', function() {
+                                rst_mdl.style.display = 'none';
+                            });
 
-                        tab_selection(1);
+                            tab_selection(1);
+                        }
                     }
                 });
         });
