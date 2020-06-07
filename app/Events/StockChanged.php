@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\User;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -10,20 +11,20 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class StockChanged
+class StockChanged implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    //public $item;
+    public $user;
 
     /**
      * Create a new event instance.
      *
-     * @param $item
+     * @param User $user
      */
-    public function __construct($item)
+    public function __construct(User $user)
     {
-        //$this->item = $item;
+        $this->user = $user;
     }
 
     /**
@@ -33,6 +34,6 @@ class StockChanged
      */
     public function broadcastOn()
     {
-        return new PrivateChannel('channel-name');
+        return new PrivateChannel('station-'.$this->user->station_id);
     }
 }

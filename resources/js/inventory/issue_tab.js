@@ -2,6 +2,7 @@ import { make_list, get_parent, tog_row_disp } from './helpers/utils';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { cloneDeep } from 'lodash';
+import axios from 'axios';
 
 export {
     init_isu_tab,
@@ -768,7 +769,7 @@ function handle_submit() {
         isu_list = process_data();
     }
     catch (err) {
-        console.log('error occurred while processing data ' + err);
+        //console.error('error occurred while processing data ' + err);
         return;
     }
 
@@ -1079,7 +1080,7 @@ function data(list, line_height) {
 /**
  * submit issue & reset form with updated data
  */
-function submit_issue(isu_mdl, isu_list ) {
+function submit_issue(isu_mdl, isu_list) {
     display_loading(isu_mdl);
 
     const pdf_list = cloneDeep(isu_list);
@@ -1089,7 +1090,26 @@ function submit_issue(isu_mdl, isu_list ) {
     const rows = document.getElementById('isu_lst_tbl').rows;
     //console.log('data sending');
 
-    const XHR = new XMLHttpRequest();
+    axios.post('/inventory/transaction/stock/issue',
+        {
+            issue: JSON.stringify(isu_list),
+        },
+        {
+            headers: {'X-Socket-ID': window.Ech0.socketId() },
+        })
+        .then( response => {
+            reset_form(response.data.items, rows, set_item_table);
+
+            pdf_list.model_details.top_right.tran_det = `Transaction ID: ${ response.data.t_id }`;
+
+            display_success(isu_mdl, pdf_list);
+        })
+        .catch( error => {
+            console.error('Error occurred while submitting data: ' + error);
+            display_error(isu_mdl);
+        });
+
+    /*const XHR = new XMLHttpRequest();
 
     XHR.addEventListener('load', function(event) {
         if(event.target.status === 200) {
@@ -1117,7 +1137,7 @@ function submit_issue(isu_mdl, isu_list ) {
     XHR.open('POST', '/inventory/transaction/stock/issue', true);
     XHR.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 
-    XHR.send('_token=' + window.getCSRF() + '&' + 'issue=' + JSON.stringify(isu_list));
+    XHR.send('_token=' + window.getCSRF() + '&' + 'issue=' + JSON.stringify(isu_list));*/
 }
 
 
