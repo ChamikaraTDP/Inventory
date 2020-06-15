@@ -236,7 +236,7 @@ function handle_station_issue(transac) {
                         'sign_usr_name': transac.isu_usr,
                         'sign_note': `(Issuing Officer)`,
                     },
-                    'btn_text': `Download PDF`,
+                    'btn_text': `Print`,
                 },
             };
 
@@ -275,7 +275,7 @@ function handle_stock_receipt(transac) {
                     'description': `Description: ${ transac.des ? transac.des : 'not provided' }`,
                     'sign_note': `(Stock Officer)`,
                     'sign_usr_name' : transac.rcv_usr,
-                    'btn_text' : `Download PDF`,
+                    'btn_text' : `Print`,
                     'tran_det': `Transaction ID : ${ transac.id }`,
                 },
             };
@@ -316,7 +316,7 @@ function handle_station_receipt(transac) {
                         'sign_usr_name': transac.rcv_usr,
                         'sign_note': `(Receiving Officer)`,
                     },
-                    'btn_text': `Download PDF`,
+                    'btn_text': `Print`,
                 },
             };
 

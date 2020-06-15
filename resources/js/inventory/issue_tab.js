@@ -826,14 +826,14 @@ function display_model(isu_mdl, isu_list, button_func) {
             </tr>
             <tr>
                 <td colspan="2">
-                    <div>
+                    <div class="padding_left_10">
                       <span class="width_40">Item Code</span>
                       <span class="width_40">Serial Number</span>
                     </div>`;
 
         for(let m = 0; m < quan; m++) {
             md_tbl_rows += `
-                <div>
+                <div class="padding_left_10">
                     <span class="width_40">
                         ${ items[n].codes[m].code }
                     </span>
@@ -867,7 +867,7 @@ function display_model(isu_mdl, isu_list, button_func) {
     let bot_lef = model_details.bottom_left;
 
     for(let key in bot_lef) {
-        isu_mdl_cont +=`<div>${ bot_lef[key] }</div>
+        isu_mdl_cont +=`<div><p>${ bot_lef[key] }</p></div>
                         <br>`;
     }
 
@@ -926,6 +926,17 @@ function create_pdf(isu_list) {
 
     // y coordinate of lines
     let  ymi = 1;
+
+
+    // DFAR title
+    doc.text(
+        `Department of Fisheries and Aquatic Resources-Inventory`,
+        pageWidth / 2,
+        margin + ymi * oneLineHeight,
+        { align: "center" }
+    );
+
+    ymi++;
 
     // heading
     doc.text(
@@ -1022,8 +1033,9 @@ function create_pdf(isu_list) {
     ymi = 2;
 
     for (let prop in bottom) {
-        doc.text(`${ bottom[prop] }`, margin, finalY + ymi * oneLineHeight);
-        ymi += 2;
+        const textLines = doc.splitTextToSize(`${ bottom[prop] }`, maxLineWidth);
+        doc.text(textLines, margin, finalY + ymi * oneLineHeight);
+        ymi += textLines.length + 1;
     }
 
     // draw sign details
@@ -1035,7 +1047,9 @@ function create_pdf(isu_list) {
         ymi++;
     }
 
-    doc.save('test.pdf');
+    // doc.autoPrint();
+    //doc.save('document.pdf');
+    window.open(doc.output('bloburl'), '_blank');
 }
 
 
@@ -1176,13 +1190,19 @@ function display_success(isu_mdl, pdf_list) {
     const mdl_cont = isu_mdl.querySelector('#isu_mdl_cont');
 
     mdl_cont.innerHTML = `<span id="ad_mdl_close" class="mdl_close">&times;</span>
-        <p>Issue successful :)</p><button class="add_btn isu_ad_btn" type="button">Download PDF</button>`;
+        <p>Issue successful :)</p>
+        <button id="print_btn" class="button is-medium" type="button">
+            <span class="icon">
+            <i class="fas fa-print"></i>
+            </span>
+            <span>Print</span>        
+        </button>`;
 
     mdl_cont.querySelector('#ad_mdl_close').addEventListener('click', function() {
         isu_mdl.style.display = 'none';
     });
 
-    mdl_cont.querySelector('button').addEventListener('click', function() {
+    mdl_cont.querySelector('#print_btn').addEventListener('click', function() {
         create_pdf(pdf_list);
     });
 
