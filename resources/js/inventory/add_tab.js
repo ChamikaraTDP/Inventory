@@ -196,9 +196,6 @@ function process_data(form) {
         note_no = form.querySelector('#ad_fm_isn').value,
         desc = form.querySelector('#ad_fm_des').value;
 
-
-
-
     const isu_list = {
         'items': [],
 
@@ -409,7 +406,12 @@ function display_success(ad_model, pdf_list) {
     mdl_cont.innerHTML = `
         <span id="ad_mdl_close" class="mdl_close">&times;</span>                
         <p>Items added successfully!</p>
-        <button type="button">Download PDF</button>`;
+        <button id="print_btn" class="button is-medium" type="button">
+            <span class="icon">
+            <i class="fas fa-print"></i>
+            </span>
+            <span>Print</span>        
+        </button>`;
 
     mdl_cont.querySelector('#ad_mdl_close').addEventListener('click', function() {
         ad_model.style.display = 'none';
@@ -460,23 +462,37 @@ function create_pdf(isu_list) {
 
     doc.setFontStyle("bold")
         .setFont("helvetica", "neue")
-        .setFontSize(fontSize)
-        .text(
-            `${ isu_list.model_details.heading }`,
-            pageWidth / 2,
-            margin + oneLineHeight,
-            { align: "center" }
-        );
+        .setFontSize(fontSize);
+
+    let ymi = 1;
+
+    // DFAR title
+    doc.text(
+        `Department of Fisheries and Aquatic Resources-Inventory`,
+        pageWidth / 2,
+        margin + ymi++ * oneLineHeight,
+        { align: "center" }
+    );
+
+    // heading
+    doc.text(
+        `${ isu_list.model_details.heading }`,
+        pageWidth / 2,
+        margin + ymi++ * oneLineHeight,
+        { align: "center" }
+    );
+
+    ymi += 1;
 
     doc.setFontStyle("normal")
-        .text(`${ isu_list.model_details.top_left[0] }`, margin, margin + 3 * oneLineHeight)
-        .text(`${ isu_list.model_details.tran_det }`, pageWidth - margin, margin + 3 * oneLineHeight,
+        .text(`${ isu_list.model_details.top_left[0] }`, margin, margin + ymi * oneLineHeight)
+        .text(`${ isu_list.model_details.tran_det }`, pageWidth - margin, margin + ymi++ * oneLineHeight,
             { align: 'right'})
-        .text(`${ isu_list.model_details.top_left[1] }`, margin, margin + 4 * oneLineHeight)
-        .text(`${ isu_list.model_details.top_left[2] }`, margin, margin + 5 * oneLineHeight);
+        .text(`${ isu_list.model_details.top_left[1] }`, margin, margin + ymi++ * oneLineHeight)
+        .text(`${ isu_list.model_details.top_left[2] }`, margin, margin + ymi++ * oneLineHeight);
 
     doc.autoTable({
-        startY: margin + 6 * oneLineHeight,
+        startY: margin + ymi * oneLineHeight,
         margin: 0.5,
         head: [ ['Item Category', 'Item Name', 'Quantity', 'Unit Value(Rs/-)'] ],
         body: data(isu_list),
@@ -496,14 +512,18 @@ function create_pdf(isu_list) {
     });
 
     let finalY = doc.previousAutoTable.finalY;
-    doc.text(`${ isu_list.model_details.description }`, margin, finalY + 2 * oneLineHeight);
-    doc.text(`${ isu_list.model_details.bottom_note }`, margin, finalY + 4 * oneLineHeight);
+    ymi = 2;
+    doc.text(`${ isu_list.model_details.description }`, margin, finalY + ymi * oneLineHeight);
+    ymi += 2;
+    doc.text(`${ isu_list.model_details.bottom_note }`, margin, finalY + ymi * oneLineHeight);
+    ymi += 4;
 
-    doc.text(`.......................................`, margin, finalY + 8 * oneLineHeight);
-    doc.text(`${ isu_list.model_details.sign_usr_name }`, margin, finalY + 9 * oneLineHeight);
-    doc.text(`${ isu_list.model_details.sign_note }`, margin, finalY + 10 * oneLineHeight);
+    doc.text(`.......................................`, margin, finalY + ymi++ * oneLineHeight);
+    doc.text(`${ isu_list.model_details.sign_usr_name }`, margin, finalY + ymi++ * oneLineHeight);
+    doc.text(`${ isu_list.model_details.sign_note }`, margin, finalY + ymi * oneLineHeight);
 
-    doc.save('test.pdf');
+    //doc.save('document.pdf');
+    window.open(doc.output('bloburl'), '_blank');
 
 }
 
