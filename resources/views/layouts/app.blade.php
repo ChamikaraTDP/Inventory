@@ -64,7 +64,7 @@
                                 </form>
 
                               @if(Gate::allows('edit_settings'))
-                                <a class="navbar-item">
+                                <a class="navbar-item" href="{{ route('admin') }}">
                                     {{ __('Admin') }}
                                 </a>
                               @endif
@@ -99,6 +99,17 @@
         });
 
     </script>
+
+    @if (Auth::check())
+        <script>
+            window.addEventListener('click', function(event) {
+                if(!event.target.matches('.navbar-link')){
+                    var drop_down = document.getElementById('nav_drops');
+                    drop_down.classList.toggle('is-active', false);
+                }
+            });
+        </script>
+    @endunless
 
 
     @yield('js_area')

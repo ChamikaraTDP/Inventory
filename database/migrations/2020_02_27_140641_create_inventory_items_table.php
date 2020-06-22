@@ -20,6 +20,7 @@ class CreateInventoryItemsTable extends Migration
             $table->text('serial_no')->nullable();
             $table->integer('price')->nullable();
             $table->unsignedBigInteger('current_station')->nullable();
+            $table->string('status', 10)->default('good');
             $table->timestamps();
 
             $table->foreign('item_id')->references('id')->on('items');

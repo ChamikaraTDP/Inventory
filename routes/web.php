@@ -12,10 +12,10 @@
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect('/inventory');
 });
 
-Auth::routes();
+Auth::routes(['register' => false]);
 
 // test page
 Route::get('/tests', 'HomeController@tests')->name('tests');
@@ -24,7 +24,7 @@ Route::get('/tests', 'HomeController@tests')->name('tests');
 Route::get('/inventory', 'HomeController@index')->name('inventory');
 
 // Add tab
-Route::view('/inventory/tab/add', '/tabs/add')->name('tab_add');
+Route::view('/inventory/tab/add', '/tabs/add')->middleware('can:create, App\InventoryItem')->name('tab_add');
 
 // Issue tab for stock
 Route::get('/inventory/tab/issue/stock', 'TabsController@stk_issue')->name('tab_stk_issue');
@@ -76,6 +76,30 @@ Route::post('/inventory/report/stock', 'ReportsController@stock')->name('reports
 
 // Generate reports
 Route::post('/inventory/report', 'ReportsController@generate')->name('reports_generate');
+
+// Admin panel
+Route::view('/inventory/admin', 'admin')->middleware('can:edit_settings')->name('admin');
+
+// Admin panel
+Route::get('/inventory/admin/get', 'HomeController@get_all')->name('home_get_all');
+
+// Create users
+Route::post('/inventory/users/create', 'UserController@create')->name('user_create');
+
+// Retrieve users
+Route::get('/inventory/users/index', 'UserController@index')->name('user_index');
+
+// Update users
+Route::patch('/inventory/users/update', 'UserController@update')->name('user_update');
+
+// Delete users
+Route::delete('/inventory/users/delete', 'UserController@delete')->name('user_delete');
+
+
+// Retrieve users
+Route::get('/inventory/stations/index', 'StationController@index')->name('station_index');
+
+
 
 // Route that will be executed when no other route matches the incoming request
 Route::fallback(function () {

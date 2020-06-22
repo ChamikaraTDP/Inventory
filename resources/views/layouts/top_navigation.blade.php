@@ -94,13 +94,6 @@
     <script src="{{ asset('js/inventory.js') }}"></script>
 
     <script>
-        window.addEventListener('click', function(event) {
-            if(!event.target.matches('.navbar-link')){
-                var drop_down = document.getElementById('nav_drops');
-                drop_down.classList.toggle('is-active', false);
-            }
-        });
-
         window.addEventListener('load', function() {
             tab_selection(1);
 
