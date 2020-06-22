@@ -84,7 +84,7 @@ trait Utils {
 
         $inv_items = DB::table('inventory_items')
             ->join('items', 'inventory_items.item_id', '=', 'items.id')
-            ->select('inventory_items.id', 'item_id', 'name', 'item_code', 'serial_no', 'category_id')
+            ->select('inventory_items.id', 'item_id', 'name', 'item_code', 'serial_no', 'category_id', 'status')
             ->where('current_station', $station)
             ->orderBy('item_id')
             ->get();
@@ -315,6 +315,7 @@ trait Utils {
                 $itm_code->id = $record->id;
                 $itm_code->code = $record->item_code;
                 $itm_code->serial = $record->serial_no;
+                $itm_code->status = $record->status;
 
                 $qun++;
 
@@ -337,6 +338,7 @@ trait Utils {
                 $itm_code->id = $record->id;
                 $itm_code->code = $record->item_code;
                 $itm_code->serial = $record->serial_no;
+                $itm_code->status = $record->status;
 
                 array_push($item->codes, $itm_code);
 
