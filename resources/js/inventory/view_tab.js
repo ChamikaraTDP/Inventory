@@ -13,7 +13,7 @@ function init_view_tab(data) {
 
         data: {
             'trans': data,
-            'u_stn': (window.get_user_station() ).id,
+            'u_stn': ( window.get_user_station() ).id,
         },
     });
 

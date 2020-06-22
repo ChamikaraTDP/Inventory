@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class InventoryItem extends Model
 {
+    protected $fillable = [];
 
     //InventoryItem : Item -> M : 1
     public function item(){

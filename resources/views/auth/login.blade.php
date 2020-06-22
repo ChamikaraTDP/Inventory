@@ -17,10 +17,17 @@
                             <label for="username" class="label">{{ __('Username') }}</label>
 
                             <div class="control">
-                                <input id="username" type="text" class="input @error('username') is-danger @enderror" name="username" value="{{ old('username') }}" required autocomplete="username" autofocus>
+                                <input id="username"
+                                       type="text"
+                                       class="input @error('username') is-danger @enderror"
+                                       name="username"
+                                       value="{{ old('username') }}"
+                                       required
+                                       autocomplete="username"
+                                       autofocus>
 
                                 @error('username')
-                                    <span class="help is-danger" role="alert">
+                                    <span id="user_err" class="help is-danger" role="alert">
                                         {{ $message }}
                                     </span>
                                 @enderror
@@ -31,10 +38,15 @@
                             <label for="password" class="label">{{ __('Password') }}</label>
 
                             <div class="control">
-                                <input id="password" type="password" class="input @error('password') is-danger @enderror" name="password" required autocomplete="current-password">
+                                <input id="password"
+                                       type="password"
+                                       class="input @error('password') is-danger @enderror"
+                                       name="password"
+                                       required
+                                       autocomplete="current-password">
 
                                 @error('password')
-                                    <span class="help is-danger" role="alert">
+                                    <span id="pass_err" class="help is-danger" role="alert">
                                         {{ $message }}
                                     </span>
                                 @enderror
@@ -44,7 +56,9 @@
                         <div class="field">
                             <div class="control">
                                 <label class="checkbox" for="remember">
-                                    <input type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
+                                    <input type="checkbox"
+                                           name="remember"
+                                           id="remember" {{ old('remember') ? 'checked' : '' }}>
                                     {{ __('Remember Me') }}
                                 </label>
                             </div>
@@ -70,4 +84,14 @@
         </div>
     </div>
 </div>
+{{--<script>
+    document.getElementById('username').addEventListener('blur', function(){
+        this.classList.toggle('is-danger', false);
+        var err_msg = document.getElementById('user_err');
+
+        if(err_msg){
+            err_msg.style.display = 'none';
+        }
+    });
+</script>--}}
 @endsection

@@ -12,6 +12,17 @@ class TabsController extends Controller
     use Utils;
 
     /**
+     * Create a new controller instance.
+     *
+     * @return void
+     */
+    public function __construct() {
+        $this->middleware('auth');
+        $this->middleware('can:create, App\InventoryItem')->only('stk_issue');
+    }
+
+
+    /**
      * render the issue tab
      * response with station & user data
      *
