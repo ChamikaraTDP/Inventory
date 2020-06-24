@@ -1,7 +1,26 @@
 <div class="columns is-variable is-2">
 
     <div style="margin-right: var(--column-margin-right)" class="column is-7 box auto_overflow">
-        <h5 style="padding-left: var(--title-padding-left)" class="title is-5">Items in Station</h5>
+        <div class="level">
+            <div class="level-left">
+                <div class="level-item">
+                    <h5 style="padding-left: var(--title-padding-left)" class="title is-5">Items in Station</h5>
+                </div>
+            </div>
+            <div class="level-right">
+                <div class="level-item">
+                    <div class="field">
+                        <p class="control has-icons-left">
+                            <input id="search_input" class="input is-rounded" type="email" placeholder="Search">
+                            <span class="icon is-small is-left">
+                              <i class="fas fa-search"></i>
+                            </span>
+                        </p>
+                    </div>
+{{--                    <input class="input is-rounded" type="text" placeholder="Rounded input">--}}
+                </div>
+            </div>
+        </div>
         <table class="table is-fullwidth is-hoverable">
             <thead>
             <tr>

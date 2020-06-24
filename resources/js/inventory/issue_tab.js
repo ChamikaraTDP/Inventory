@@ -1,7 +1,7 @@
 import { make_list, get_parent, tog_row_disp } from './helpers/utils';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import { cloneDeep } from 'lodash';
+import {cloneDeep, debounce} from 'lodash';
 import axios from 'axios';
 
 export {
@@ -26,6 +26,10 @@ function init_isu_tab(avl_itms) {
     set_item_table(avl_itms); // set middle item list
     set_isu_list(); // issue list setup
     document.getElementById('isu_sub_btn').addEventListener('click', handle_submit);
+
+    document.getElementById('search_input').addEventListener('input', function(event) {
+        debounced_search(event.target.value);
+    });
 }
 
 
@@ -204,6 +208,7 @@ function disp_fil_list(node) {
         const row = document.createElement('TR'),
             cell = document.createElement('TD');
 
+        row.dataset.type = 'form';
         cell.setAttribute('colspan', '5');
 
         append_divs(cell, isu_qt, prn_row);
@@ -624,13 +629,15 @@ function remove_row(row, prn_row) {
 
     let drp_clone = drp.cloneNode(true);
     let rmv_clone = rmv.cloneNode(true);
+    let add_clone = add.cloneNode(true);
 
     drp.parentNode.replaceChild(drp_clone, drp);
     rmv.parentNode.replaceChild(rmv_clone, rmv);
+    add.parentNode.replaceChild(add_clone, add);
 
     drp_clone.style.display = 'none';
     rmv_clone.style.display = 'none';
-    add.style.display = 'none';
+    add_clone.style.display = 'none';
     fil.style.display = 'inline-block';
     isu.value = '';
     isu.disabled = false;
@@ -653,6 +660,7 @@ function add_all_itms(row, prn_row) {
         }
     }
 }
+
 
 /**
  *  organize the data from the list
@@ -1218,3 +1226,37 @@ function display_error(isu_mdl) {
         isu_mdl.style.display = 'none';
     });
 }
+
+
+const debounced_search = debounce(search_items, 600);
+
+
+function search_items(phase) {
+    phase = phase.toString().toLowerCase();
+
+    const rows = document.getElementById('itm_tbl_bd').rows;
+
+    for(let row of rows) {
+        if(row.dataset.type) {
+            row.style.display = 'none';
+        }
+        else {
+            search_row(row);
+        }
+    }
+
+    function search_row(row) {
+        const cells = row.cells;
+        let  found = false;
+
+        let i = 0;
+        while(!found && i < 2) {
+            found = cells[i].innerText.toLowerCase().indexOf(phase) > -1;
+            i++;
+        }
+
+        row.style.display = found ? 'table-row' : 'none';
+    }
+
+}
+

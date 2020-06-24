@@ -95,9 +95,14 @@ Route::patch('/inventory/users/update', 'UserController@update')->name('user_upd
 // Delete users
 Route::delete('/inventory/users/delete', 'UserController@delete')->name('user_delete');
 
-
 // Retrieve users
 Route::get('/inventory/stations/index', 'StationController@index')->name('station_index');
+
+// Update InventoryItems
+Route::post('/inventory/inventory-items/update', 'InventoryItemController@update')->name('inventory_item_update');
+
+// Update InventoryItems
+Route::delete('/inventory/inventory-items/delete', 'InventoryItemController@delete')->name('inventory_item_delete');
 
 
 

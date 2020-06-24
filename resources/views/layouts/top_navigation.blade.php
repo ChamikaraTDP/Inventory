@@ -41,6 +41,12 @@
         </div>
     </div>
 
+    <div id="spinner" class="spinner">
+        <figure class="image is-128x128">
+            <img src="/images/loading.gif" alt="loading spinner">
+        </figure>
+    </div>
+
 @endsection
 
 @section('js_area')

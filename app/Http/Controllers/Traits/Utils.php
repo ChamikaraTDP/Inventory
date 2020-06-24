@@ -86,6 +86,7 @@ trait Utils {
             ->join('items', 'inventory_items.item_id', '=', 'items.id')
             ->select('inventory_items.id', 'item_id', 'name', 'item_code', 'serial_no', 'category_id', 'status')
             ->where('current_station', $station)
+            ->where('status', '<>', 'Discarded')
             ->orderBy('item_id')
             ->get();
 
