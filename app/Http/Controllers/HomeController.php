@@ -36,7 +36,7 @@ class HomeController extends Controller
         $categories = Category::select('id', 'name')->get();
         $items = Item::select('id', 'name', 'type', 'category_id')->get();
         $stations = Station::select('id', 'name')->get();
-        $users = User::select('id', 'name', 'user_type', 'station_id')
+        $users = User::select('id', 'name', 'station_id')
             ->where('user_type', '<>', 'guest')
             ->get();
 

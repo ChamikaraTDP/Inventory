@@ -19,6 +19,8 @@ function tab_selection(tab_no) {
         return;
     }
 
+    document.getElementById('spinner').style.display = 'flex';
+
     const nv_tabs = document.querySelectorAll('.tabs li');
 
     nv_tabs.forEach(function(node) {
@@ -55,6 +57,8 @@ function get_add_tab() {
         .then(response => {
             document.getElementById('grid_area').innerHTML = response.data;
             init_add_tab();
+            document.getElementById('spinner').style.display = 'none';
+
         })
         .catch(error => {
             console.error('There has been a problem with your get_add request:', error.message);
@@ -66,22 +70,29 @@ function get_add_tab() {
  *
  */
 function get_issue_tab() {
-
     if (window.get_user().station_id === 1) {
-        axios.get(`/inventory/tab/issue/stock`).then(response => {
-            document.getElementById('grid_area').innerHTML = response.data.issue_view;
-            init_isu_stock(response.data.items);
-        }).catch(error => {
-            console.error('There has been a problem with your get_issue request:', error.message);
-        });
+        axios.get(`/inventory/tab/issue/stock`)
+            .then(response => {
+                document.getElementById('grid_area').innerHTML = response.data.issue_view;
+                init_isu_stock(response.data.items);
+
+                document.getElementById('spinner').style.display = 'none';
+
+            }).catch(error => {
+                console.error('There has been a problem with your get_issue request:', error.message);
+            });
     }
     else {
-        axios.get(`/inventory/tab/issue/station?stn=${window.get_user_station().id}`).then(response => {
-            document.getElementById('grid_area').innerHTML = response.data.issue_view;
-            init_isu_station(response.data.items);
-        }).catch(error => {
-            console.error('There has been a problem with your get_issue request:', error.message);
-        });
+        axios.get(`/inventory/tab/issue/station?stn=${window.get_user_station().id}`)
+            .then(response => {
+                document.getElementById('grid_area').innerHTML = response.data.issue_view;
+                init_isu_station(response.data.items);
+
+                document.getElementById('spinner').style.display = 'none';
+
+            }).catch(error => {
+                console.error('There has been a problem with your get_issue request:', error.message);
+            });
     }
 }
 
@@ -94,6 +105,8 @@ function get_view_tab() {
         .then(response => {
             document.getElementById('grid_area').innerHTML = response.data.view_tab;
             init_view_tab(response.data.trans);
+            document.getElementById('spinner').style.display = 'none';
+
         })
         .catch(error =>{
             console.error('There has been a problem with your get_view request:', error.message);
@@ -108,6 +121,8 @@ function get_reports_tab() {
         .then(response => {
             document.getElementById('grid_area').innerHTML = response.data;
             init_reports_tab();
+            document.getElementById('spinner').style.display = 'none';
+
         })
         .catch(error => {
             console.error('There has been a problem with your get_reports request:', error.message);
