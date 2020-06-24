@@ -1,5 +1,5 @@
 <div class="columns is-mobile is-centered">
-    <div style="padding: 2rem" class="column is-10 box auto_overflow">
+    <div style="padding: 2rem; border: 1px solid #dbdbdb" class="column is-10 box auto_overflow">
         <form id="ad_itm_form">
 
             <div class="padding_left_20">
