@@ -1,6 +1,6 @@
 <div class="columns is-variable is-2">
 
-    <div style="margin-right: var(--column-margin-right)" class="column is-7 box auto_overflow">
+    <div style="margin-right: var(--column-margin-right); border: 1px solid #dbdbdb" class="column is-7 box auto_overflow">
         <div class="level">
             <div class="level-left">
                 <div class="level-item">
@@ -35,7 +35,7 @@
         </table>
     </div>
 
-    <div class="column is-5 box auto_overflow">
+    <div style="border: 1px solid #dbdbdb" class="column is-5 box auto_overflow">
         <h5 style="padding-left: var(--title-padding-left)" class="title is-5">Issuing List</h5>
         <table id="isu_lst_tbl" class="table is-fullwidth is-hoverable">
             <thead>
