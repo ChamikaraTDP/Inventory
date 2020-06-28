@@ -28,5 +28,12 @@
 @endsection
 
 @section('js_area')
+    <script>
+        function get_user() {
+            var user = @json(auth()->user());
+            return user;
+        }
+    </script>
+
     <script src="{{ asset('js/admin_panel.js') }}"></script>
 @endsection

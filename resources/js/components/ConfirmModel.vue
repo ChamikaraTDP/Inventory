@@ -3,7 +3,7 @@
         <div class="modal-background"></div>
         <div class="modal-content">
             <div class="box">
-                <div><p>Are you sure you want to remove {{ user.name }}?</p></div>
+                <div><p>Are you sure you want to remove {{ resource.name }}?</p></div>
                 <div class="field is-grouped">
                     <p class="control">
                         <button class="button" @click="$emit('close')">
@@ -11,7 +11,7 @@
                         </button>
                     </p>
                     <p class="control">
-                        <button class="button is-warning" @click="$emit('confirm', user.id)">
+                        <button class="button is-warning" @click="$emit('confirm', resource.id)">
                             Yes
                         </button>
                     </p>
@@ -24,7 +24,7 @@
 
 <script>
 export default {
-    props: ['user'],
+    props: ['resource'],
 
 };
 </script>

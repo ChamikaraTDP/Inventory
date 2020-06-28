@@ -1,5 +1,5 @@
-<div style="border: 1px solid #dbdbdb" class="columns is-centered">
-    <div class="column is-8 box">
+<div class="columns is-centered">
+    <div style="border: 1px solid #dbdbdb" class="column is-8 box">
         <nav class="level b_side_pd_3">
             <div class="level-left">
                 <div class="level-item">

@@ -96,14 +96,32 @@ Route::patch('/inventory/users/update', 'UserController@update')->name('user_upd
 Route::delete('/inventory/users/delete', 'UserController@delete')->name('user_delete');
 
 // Retrieve users
-Route::get('/inventory/stations/index', 'StationController@index')->name('station_index');
+//Route::get('/inventory/stations/index', 'StationController@index')->name('station_index');
 
 // Update InventoryItems
 Route::post('/inventory/inventory-items/update', 'InventoryItemController@update')->name('inventory_item_update');
 
-// Update InventoryItems
+// Delete InventoryItems
 Route::delete('/inventory/inventory-items/delete', 'InventoryItemController@delete')->name('inventory_item_delete');
 
+// Update Item
+Route::patch('/items/{item}', 'ItemController@update')->name('item_update');
+
+// Update Item
+Route::patch('/items/{item}', 'ItemController@update')->name('item_update');
+
+// Update Item
+Route::post('/items', 'ItemController@store')->name('item_store');
+
+// Delete Item
+Route::delete('/items/{item}', 'ItemController@destroy')->name('item_destroy');
+
+
+
+Route::resources([
+    'stations' => 'StationController',
+    'categories' => 'CategoryController'
+]);
 
 
 // Route that will be executed when no other route matches the incoming request

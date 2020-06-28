@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Station;
+use App\Category;
 use Illuminate\Http\Request;
 
-class StationController extends Controller
+class CategoryController extends Controller
 {
 
     /**
@@ -46,18 +46,18 @@ class StationController extends Controller
      */
     public function store(Request $request)
     {
-        $station = new Station;
-        $station->name = $request->name;
-        $station->save();
+        $category = new Category;
+        $category->name = $request->name;
+        $category->save();
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Station  $station
+     * @param  \App\Category  $category
      * @return \Illuminate\Http\Response
      */
-    public function show(Station $station)
+    public function show(Category $category)
     {
         //
     }
@@ -65,10 +65,10 @@ class StationController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Station  $station
+     * @param  \App\Category  $category
      * @return \Illuminate\Http\Response
      */
-    public function edit(Station $station)
+    public function edit(Category $category)
     {
         //
     }
@@ -77,25 +77,25 @@ class StationController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Station  $station
+     * @param  \App\Category  $category
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Station $station)
+    public function update(Request $request, Category $category)
     {
-        $station->name = $request->name;
-        $station->save();
+        $category->name = $request->name;
+        $category->save();
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Station  $station
+     * @param  \App\Category  $category
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Station $station)
+    public function destroy(Category $category)
     {
         try {
-            $station->delete();
+            $category->delete();
         }
         catch (\Exception $exp) {
             return response($exp->getMessage(), 500);
