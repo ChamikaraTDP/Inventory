@@ -29,6 +29,6 @@ class CreateTransInfoView extends Migration
      */
     public function down()
     {
-        DB::statement("drop view if exists trans_info");
+        DB::statement("drop view trans_info");
     }
 }

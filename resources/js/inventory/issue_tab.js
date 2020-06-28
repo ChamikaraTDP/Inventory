@@ -160,7 +160,7 @@ function set_item_table(avl_itms) {
  */
 function set_isu_list() {
     const stations = ( window.get_stations() ).filter(function(station) {
-            return window.get_user().station_id !== station.id;
+            return window.get_user().station_id !== station.id && station.id !== 1;
         }),
         list = make_list(stations),
         stn_drp_dv = document.getElementById('rcv_stn_dv');

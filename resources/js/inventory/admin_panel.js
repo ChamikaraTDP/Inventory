@@ -1,7 +1,9 @@
 import Vue from 'vue';
-import UsersTab from '../components/UsersTab';
-import StationsTab from '../components/StationsTab';
+import UsersTab from '../components/admin_panel/users/UsersTab';
+import StationsTab from '../components/admin_panel/stations/StationsTab';
+import CategoriesTab from '../components/admin_panel/categories/CategoriesTab';
 import axios from  'axios';
+import ItemsTab from '../components/admin_panel/items/ItemsTab';
 
 
 Vue.component('tabs', function(resolve, reject) {
@@ -11,6 +13,8 @@ Vue.component('tabs', function(resolve, reject) {
                 components: {
                     'tab-users': UsersTab,
                     'tab-stations': StationsTab,
+                    'tab-categories': CategoriesTab,
+                    'tab-items': ItemsTab,
                 },
 
                 template: `
@@ -34,8 +38,11 @@ Vue.component('tabs', function(resolve, reject) {
                         tabs: ['Users','Stations', 'Categories', 'Items'],
                         current_tab: 'Users',
                         Stations: response.data.stations,
+                        Categories: response.data.categories,
+                        item_tab: response.data.items,
                         user_tab: response.data.users,
                         Users: {},
+                        Items: {},
 
                     };
                 },
@@ -50,6 +57,11 @@ Vue.component('tabs', function(resolve, reject) {
                     this.Users = {
                         users: this.user_tab,
                         stations: this.Stations,
+                    };
+
+                    this.Items = {
+                        items: this.item_tab,
+                        categories: this.Categories,
                     };
                 },
 

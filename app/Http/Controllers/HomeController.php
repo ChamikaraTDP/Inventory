@@ -45,7 +45,9 @@ class HomeController extends Controller
 
     public function get_all() {
         $categories = Category::select('id', 'name')->get();
-        $items = Item::select('id', 'name', 'type', 'category_id')->get();
+        $items = Item::select('id', 'name', 'type', 'category_id')
+            ->with('category:id,name')
+            ->get();
         $stations = Station::select('id', 'name')->get();
         $users = User::select('id', 'name', 'user_type', 'station_id')
             ->with('station:id,name')

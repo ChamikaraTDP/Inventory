@@ -37,24 +37,31 @@
                          :stations="details.stations"
                          v-if="show_model"
                          @close="show_model = false"
-                         @edited="submit_user"
-        />
+                         @edited="submit_user"/>
 
         <user-create-model :user="model_user"
                            :stations="details.stations"
                            v-if="show_form"
                            @close="show_form = false"
-                           @create="create_user"
-        />
+                           @create="create_user"/>
 
         <slot-model v-show="show_loading" @close="show_loading = false">
-            <figure class="image is-128x128">
-                <img src="/images/loading.gif" alt="loading spinner">
-            </figure>
-            <span>Please wait...</span>
+            <div class="level">
+                <div class="level-left">
+                    <div class="level-item">
+                        <figure class="image is-128x128">
+                            <img src="/images/loading.gif" alt="loading spinner">
+                        </figure>
+                    </div>
+                    <div class="level-item">
+                        <span>Please wait...</span>
+                    </div>
+                </div>
+                <div class="level-right"></div>
+            </div>
         </slot-model>
 
-        <confirm-model :user="model_user"
+        <confirm-model :resource="model_user"
                        v-if="show_confirm"
                        @close="show_confirm = false"
                        @confirm="remove_user"/>
@@ -65,10 +72,10 @@
 import axios from 'axios';
 import { cloneDeep } from 'lodash';
 
-import UserRow from '../components/UserRow';
-import UserEditModel from '../components/UserEditModel';
-import SlotModel from '../components/SlotModel';
-import ConfirmModel from '../components/ConfirmModel';
+import UserRow from './UserRow';
+import UserEditModel from './UserEditModel';
+import SlotModel from '../../SlotModel';
+import ConfirmModel from '../../ConfirmModel';
 import UserCreateModel from './UserCreateModel';
 
 
@@ -128,15 +135,19 @@ export default
         remove_user(user_id) {
             this.show_confirm = false;
             this.show_loading = true;
-            //let users = this.details.users;
 
             axios.delete(`/inventory/users/delete?id=${ user_id }`)
                 .then( () => {
-                    this.details.users = this.details.users.filter(user => {
-                        return user.id != user_id;
-                    });
+                    if( window.get_user().id === user_id ) {
+                        document.getElementById('logout-form').submit();
+                    }
+                    else {
+                        this.details.users = this.details.users.filter(user => {
+                            return user.id != user_id;
+                        });
 
-                    this.show_loading = false;
+                        this.show_loading = false;
+                    }
                 })
                 .catch(error => {
                     console.error('Error occurred while deleting the user: ' + error.message);
@@ -157,12 +168,19 @@ export default
 
             axios.patch('/inventory/users/update', user)
                 .then( () => {
-                    let user_index = users.findIndex(old_user => {
-                        return old_user.id === user.id;
-                    });
+                    if( window.get_user().id === user.id ) {
+                        document.getElementById('logout-form').submit();
+                    }
+                    else {
 
-                    users[user_index] = user;
-                    this.show_loading = false;
+                        let user_index = users.findIndex(old_user => {
+                            return old_user.id === user.id;
+                        });
+
+                        users[user_index] = user;
+                        this.show_loading = false;
+
+                    }
                 })
                 .catch(error => {
                     console.error('Error occurred while updating the user: ' + error.message);

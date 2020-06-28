@@ -1,5 +1,5 @@
-<div style="border: 1px solid #dbdbdb" class="columns is-centered">
-    <div class="column is-8 box">
+<div class="columns is-centered">
+    <div style="border: 1px solid #dbdbdb" class="column is-8 box">
         <div class="field">
             <p class="control has-icons-left">
                 <input id="search_box" class="input" type="text" placeholder="Search">
