@@ -1,0 +1,31 @@
+services:
+  inventory-mysql:
+    image: mysql:5.7-debian
+    volumes:
+      - inventory-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: Black@521
+      MYSQL_DATABASE: inventory
+
+  inventory:
+    image: php:7.4-alpine
+    ports:
+      - 127.0.0.1:8000:8000
+    working_dir: /app
+    volumes:
+      - ./:/app
+    stdin_open: true 
+    tty: true
+
+  # inventory-frontend:
+  #   image: node:14-alpine
+  #   ports:
+  #     - 127.0.0.1:3000:3000
+  #   working_dir: /app
+  #   volumes:
+  #     - ./:/app
+  #   stdin_open: true 
+  #   tty: true
+
+volumes:
+  inventory-data:
