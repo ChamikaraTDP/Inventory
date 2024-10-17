@@ -4,7 +4,7 @@ services:
     volumes:
       - inventory-data:/var/lib/mysql
     environment:
-      MYSQL_ROOT_PASSWORD: Black@521
+      MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: inventory
 
   inventory:
@@ -14,18 +14,20 @@ services:
     working_dir: /app
     volumes:
       - ./:/app
-    stdin_open: true 
-    tty: true
+    command: [ sh, -c, "cp .env.example .env \
+      && php composer.phar install \ 
+      && docker-php-ext-install pdo_mysql mysqli \
+      && php artisan key:generate \
+      && php artisan migrate \
+      && php artisan db:seed \
+      && php artisan serve --host=0.0.0.0 --port=8000"]
 
-  # inventory-frontend:
-  #   image: node:14-alpine
-  #   ports:
-  #     - 127.0.0.1:3000:3000
-  #   working_dir: /app
-  #   volumes:
-  #     - ./:/app
-  #   stdin_open: true 
-  #   tty: true
+  inventory-frontend:
+    image: node:16-alpine
+    working_dir: /app
+    volumes:
+      - ./:/app
+    command: [ sh, -c, "npm install --legacy-peer-deps && npm run prod" ]
 
 volumes:
   inventory-data:
