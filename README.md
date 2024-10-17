@@ -1,20 +1,18 @@
 ## Department of Fisheries and Aquatic Resources Inventory
 
 ## Environment
-1. php 7.4
-2. node 14
-3. php composer
-4. mysql ?
-5. 
 
-### Installation
+Ubuntu 22.04
 
-1. Rename env.example file to .env and configure to your environment
-2. composer update
-3. npm install
-4. php artisan key:generate
-5. npm run dev
-6. php artisan migrate
-7. php artisan db:seed
+Docker version 27.3.1, build ce12230
 
-then to run the app,  **php artisan serve** 
+### How to use
+
+1. Download the project from GitHub
+2. Go to project folder
+3. Open a new terminal and run `docker compose up -d` be patiant till finish (use `docker compose logs -f` to check progress)
+4. That's it! Go to `localhost:8000` on your browser and see.
+
+### Screenshot
+
+![Inventory in action](./Screenshot-from-2024-10-16-11-33-43.png)
