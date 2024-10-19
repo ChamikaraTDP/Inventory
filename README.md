@@ -1,4 +1,4 @@
-## Department of Fisheries and Aquatic Resources Inventory
+## Multi-Station Inventory
 Custom inventory system that can manage resources in multiple locations. Project originally designed for the Department of Fisheries and Aquatic resources, Sri Lanka.
 
 
